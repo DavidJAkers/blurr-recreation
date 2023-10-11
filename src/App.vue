@@ -1,10 +1,11 @@
 <script lang="ts">
-import { defineComponent, watchEffect, ref } from 'vue';
+import { defineComponent, watchEffect, ref, computed } from 'vue';
 import HeaderBar from './components/HeaderBar.vue'
 import GameControl from './components/GameControl.vue'
 import getSettings from './composables/getSettings'
 import { type Genre} from './types/Genre'
 import { type Decade } from './types/Decade'
+import {type AlbumData} from './types/AlbumData'
 import getYear from './composables/getYear';
 
 export default defineComponent({
@@ -15,17 +16,32 @@ export default defineComponent({
     const genre_list = ["Pop", "Rock", "Electronic"] as Genre[]
     const decade_list = ["1980's", "1990's", "2000's", "2010's", "2020's"] as Decade[]
 
-
-    const { genre, decade, fetch_index } = getSettings(genre_list, decade_list)
+    const { genre, decade, /*fetch_index*/ } = getSettings(genre_list, decade_list)
 
     const year = ref<number | null>(null)
     //calculates and assigns year value for the decade whenever decade updates and on load
     watchEffect(() => {
       if (decade.value) year.value = (getYear(decade.value))
-      console.log(year.value)
     } )
     
-    return {genre, decade, genre_list, decade_list, fetch_index, year}
+    const refreshSettings = () => {
+      const {genre, decade, fetch_index} = getSettings(genre_list, decade_list)
+      //start from here
+    }
+    
+    const fetch_url = computed(() => {
+      return 'https://api.discogs.com/database/search?type=master&genre=' + genre.value + '&year=' + year.value + '&per_page=9&page=1'})
+
+    watchEffect((() => {
+      console.log(fetch_url.value)
+      //will turn into data fetch from composable
+    }))
+
+    const selected_album = ref<AlbumData | null>(null)
+
+    selected_album.value = {name: 'Thriller', artist: 'Michael Jackson', year: 1982, genre: 'Pop', image: 'mj.jpg'}
+
+    return { genre, decade, genre_list, decade_list, selected_album, refreshSettings}
   },
 
   }
@@ -46,7 +62,7 @@ export default defineComponent({
       <option v-for="(decade, index) in decade_list" :key="index">{{ decade }}</option>
     </select>
   </div>
-    <GameControl v-if="genre !== null && year !== null && fetch_index !== null" :genre="genre" :year="year" :fetch_index="fetch_index"/>
+    <GameControl v-if="selected_album !== null" :selected_album="selected_album" :refreshSettings="refreshSettings"/>
   </div>
 </template>
 
