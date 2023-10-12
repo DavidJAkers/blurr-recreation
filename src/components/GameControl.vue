@@ -30,8 +30,6 @@ export default defineComponent ({
     const artist_guess = ref<string>('')
     const album_correct = ref<boolean>(false)
     const artist_correct = ref<boolean>(false)
-
-
     const blur_styling = computed(() => {
       return "filter: blur(" + gameStep.value.blurlevel + ")"
     })
@@ -97,7 +95,7 @@ export default defineComponent ({
 
     
 
-    return { gameStep, nextStep, blur_styling, points, album_guess, artist_guess, newGame, album_correct, artist_correct, handleGuessEntry }
+    return { gameStep, nextStep, blur_styling, points, album_guess, artist_guess, newGame, album_correct, artist_correct, handleGuessEntry, }
   }
 })
 
@@ -108,7 +106,7 @@ export default defineComponent ({
     <div>Guesses remaining: {{ gameStep.step }}</div>
   </div>
   <div class="image-container">
-    <img class="main-image" src="@/assets/mj.jpg" alt="Blurred" width="240" :style="blur_styling" />  
+    <img class="main-image" :src="selected_album.image" alt="Blurred" width="240" :style="blur_styling" />  
     <!-- Above to be changed once data is fetched -->
   </div>
   <div class="genre-year">

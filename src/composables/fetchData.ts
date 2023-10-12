@@ -1,31 +1,24 @@
-import {watchEffect, ref} from 'vue'
+import { ref } from 'vue'
+import { type ResponseData } from '@/types/ResponseData'
 
-const fetchData = (fetch_url: string) => {
-  const data = ref<Promise<any> | null>(null)
-  const error =ref<string | null>(null)
-
-  
-  watchEffect(() => {
-    console.log(fetch_url)
-
-    const load = async() => {
-      try {
-        const data = await fetch(fetch_url, {headers: {Authorization: "Discogs key=SJdGocnZCcCymeDLaWgC, secret=hVVwFIdXbknmrXffmLCdvFUKiQSHaQvf"}})
-        if (!data.ok) {
-          throw Error('Fetch error')
-        }
-         return await data.json()
-
-      } catch (err) {
-        if (err instanceof Error) {
-        error.value = err.message
-        }
+const fetchData = async (fetch_url: string) => {
+  const data = ref<ResponseData[] | null>(null)
+  const fetch_error =ref<Error | null>(null)
+  try {
+    const response = await fetch(fetch_url, {headers: {Authorization: "Discogs key=SJdGocnZCcCymeDLaWgC, secret=hVVwFIdXbknmrXffmLCdvFUKiQSHaQvf"}})
+    if (!response.ok) {
+      throw Error('Error retrieving album data')
     }
-  }
-  data.value = load()
+    const queried_data = await response.json()
+    data.value = queried_data.results
 
-})
-    return { data, error}
+  } catch (err) {
+    if (err instanceof Error) {
+    fetch_error.value = err
+    console.error(fetch_error.value)
+    }
+}
+  return { data, fetch_error }
 }
 
 export default fetchData

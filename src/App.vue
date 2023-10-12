@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, watchEffect, ref, computed, } from 'vue';
+import { defineComponent, watch, watchEffect, ref, computed, } from 'vue';
 import HeaderBar from './components/HeaderBar.vue'
 import GameControl from './components/GameControl.vue'
 import { type Genre } from './types/Genre'
@@ -9,6 +9,8 @@ import { type GameHistory } from './types/GameHistory';
 import getYear from './composables/getYear';
 import getSettings from './composables/getSettings'
 import fetchData from './composables/fetchData'
+import formatData from './composables/formatData';
+
 
 export default defineComponent({
   name: 'App',
@@ -17,6 +19,12 @@ export default defineComponent({
     const genre = ref<Genre | null>(null)
     const decade = ref<Decade | null>(null)
     const fetch_index = ref<number | null>(null)
+
+    const error = ref<Error | null>(null)
+
+    watch(error, () => {
+      console.log(error.value, "from app")
+    })
 
     const genre_list = ["Pop", "Rock", "Electronic"] as Genre[]
     const decade_list = ["1980's", "1990's", "2000's", "2010's", "2020's"] as Decade[]
@@ -45,22 +53,39 @@ export default defineComponent({
 
 
     const refreshSettings = () => {
-      const { genre_val, decade_val /*fetch_index_val*/ } = getSettings(genre_list, decade_list)
+      const { genre_val, decade_val, fetch_index_val } = getSettings(genre_list, decade_list)
       if (!genre_selected.value) genre.value = genre_val
       if (!decade_selected.value) decade.value = decade_val
+      fetch_index.value = fetch_index_val
 
       //Changes year even if decade is selected 
       if (decade_selected.value) {
         if (decade.value) year.value = getYear(decade.value)
       }
     }
+    const selected_album = ref<AlbumData | null>(null)
 
     const fetch_url = computed(() => {
       return 'https://api.discogs.com/database/search?type=master&genre=' + genre.value + '&year=' + year.value + '&per_page=9&page=1'
     })
 
-    const { data, error } = fetchData(fetch_url.value)
+
+    watch(fetch_url, async ()=> {
+      const { data, fetch_error } = await fetchData(fetch_url.value)
+      if (data.value && fetch_index.value && genre.value && year.value) {
+       const {album_data} = formatData(data.value, fetch_index.value, genre.value, year.value)
+        selected_album.value = album_data
+      }
+      if (fetch_error.value) {
+        error.value = fetch_error.value
+
+      }
+      
+
+    }, { immediate: true })
+
     
+    //formatData(data.value, fetch_index.value, genre.value, year.value)
     
 
     const addGameHistory = (game: GameHistory) => {
@@ -71,14 +96,12 @@ export default defineComponent({
       if (game_history.value.length) console.log(game_history.value)
     })
 
-    const selected_album = ref<AlbumData | null>(null)
-
-    selected_album.value = { name: 'Thriller', artist: 'Michael Jackson', year: 1982, genre: 'Pop', image: 'mj.jpg' }
+ 
 
     return {
       genre, decade, genre_list, decade_list, selected_album,
       refreshSettings, genre_selected, decade_selected, genreSelectChange,
-      decadeSelectChange, addGameHistory
+      decadeSelectChange, addGameHistory, error
     }
 
   },
@@ -103,6 +126,7 @@ export default defineComponent({
     </div>
     <GameControl v-if="selected_album !== null" :selected_album="selected_album" :refreshSettings="refreshSettings"
       :addGameHistory="addGameHistory" />
+    <div class ="error-message" v-else-if="error">{{ error.message }}</div>
   </div>
 </template>
 
@@ -141,4 +165,11 @@ select {
   display: flex;
   flex-direction: column;
   align-items: center;
+
+.error-message {
+  color: crimson;
+  font-weight: 600;
+  padding-top: 50px;
+  font-size: 30px
+}
 }</style>
