@@ -12,6 +12,7 @@ import fetchData from './composables/fetchData'
 import formatData from './composables/formatData';
 
 
+
 export default defineComponent({
   name: 'App',
   components: { HeaderBar, GameControl },
@@ -30,7 +31,7 @@ export default defineComponent({
     const decade_list = ["1980's", "1990's", "2000's", "2010's", "2020's"] as Decade[]
     const game_history = ref<GameHistory[]>([])
 
-    const { genre_val, decade_val, fetch_index_val} = getSettings(genre_list, decade_list)
+    const { genre_val, decade_val, fetch_index_val } = getSettings(genre_list, decade_list)
     genre.value = genre_val
     decade.value = decade_val
     fetch_index.value = fetch_index_val
@@ -66,27 +67,30 @@ export default defineComponent({
     const selected_album = ref<AlbumData | null>(null)
 
     const fetch_url = computed(() => {
-      return 'https://api.discogs.com/database/search?type=master&genre=' + genre.value + '&year=' + year.value + '&per_page=9&page=1'
+      const url = new URL('https://api.discogs.com/database/search')
+      url.searchParams.set('type', 'master')
+      if (genre.value) url.searchParams.set('genre', genre.value)
+      if (year.value) url.searchParams.set('year', year.value.toString())
+      url.searchParams.set('per_page', '9')
+      url.searchParams.set('page', '1')
+      return url
+      //'?type=master&genre=' + genre.value + '&year=' + year.value + '&per_page=9&page=1'
     })
 
 
-    watch(fetch_url, async ()=> {
+    watch(fetch_url, async () => {
       const { data, fetch_error } = await fetchData(fetch_url.value)
       if (data.value && fetch_index.value && genre.value && year.value) {
-       const {album_data} = formatData(data.value, fetch_index.value, genre.value, year.value)
+        const { album_data } = formatData(data.value, fetch_index.value, genre.value, year.value)
         selected_album.value = album_data
       }
       if (fetch_error.value) {
         error.value = fetch_error.value
-
       }
-      
+
 
     }, { immediate: true })
 
-    
-    //formatData(data.value, fetch_index.value, genre.value, year.value)
-    
 
     const addGameHistory = (game: GameHistory) => {
       game_history.value.push(game)
@@ -96,7 +100,6 @@ export default defineComponent({
       if (game_history.value.length) console.log(game_history.value)
     })
 
- 
 
     return {
       genre, decade, genre_list, decade_list, selected_album,
@@ -126,7 +129,7 @@ export default defineComponent({
     </div>
     <GameControl v-if="selected_album !== null" :selected_album="selected_album" :refreshSettings="refreshSettings"
       :addGameHistory="addGameHistory" />
-    <div class ="error-message" v-else-if="error">{{ error.message }}</div>
+    <div class="error-message" v-else-if="error">{{ error.message }}</div>
   </div>
 </template>
 
@@ -166,10 +169,11 @@ select {
   flex-direction: column;
   align-items: center;
 
-.error-message {
-  color: crimson;
-  font-weight: 600;
-  padding-top: 50px;
-  font-size: 30px
+  .error-message {
+    color: crimson;
+    font-weight: 600;
+    padding-top: 50px;
+    font-size: 30px
+  }
 }
-}</style>
+</style>

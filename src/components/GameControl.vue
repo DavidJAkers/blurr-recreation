@@ -1,5 +1,5 @@
 <script lang="ts">
-import { computed, defineComponent, ref } from 'vue';
+import { computed, defineComponent, ref, watchEffect } from 'vue';
 import type { PropType } from 'vue'
 import type { AlbumData } from '@/types/AlbumData';
 import type { GameStep } from '@/types/GameStep';
@@ -22,7 +22,10 @@ export default defineComponent ({
     }
   },
   setup(props) {
-    const {selected_album, refreshSettings, addGameHistory} = props
+    const {refreshSettings, addGameHistory} = props
+    const selected_album = computed(() => {
+      return props.selected_album
+    })
     const game_init = { step: 5, blurlevel: "25px"}
     const gameStep = ref<GameStep>(game_init)
     const points = ref<number>(0)
@@ -33,6 +36,8 @@ export default defineComponent ({
     const blur_styling = computed(() => {
       return "filter: blur(" + gameStep.value.blurlevel + ")"
     })
+
+    watchEffect(() => console.log(selected_album.value.name, '-', selected_album.value.artist))
 
     const nextStep = () => {
       if (gameStep.value.step > 0) {
@@ -49,13 +54,13 @@ export default defineComponent ({
     }
 
     const handleGuessEntry = () => {
-      if (normalizeString(album_guess.value) === normalizeString(selected_album.name)) {
+      if (normalizeString(album_guess.value) === normalizeString(selected_album.value.name)) {
         if (album_correct.value === false) {
           points.value += gameStep.value.step
           album_correct.value = true
         }
       }
-      if (normalizeString(artist_guess.value) === normalizeString(selected_album.artist)) {
+      if (normalizeString(artist_guess.value) === normalizeString(selected_album.value.artist)) {
         if (artist_correct.value === false) {
           points.value += gameStep.value.step
           artist_correct.value = true
@@ -65,11 +70,11 @@ export default defineComponent ({
         addGameHistory({
           game_won: true,
           game_points: points.value,
-          game_album_name: selected_album.name,
-          game_artist_name: selected_album.artist,
+          game_album_name: selected_album.value.name,
+          game_artist_name: selected_album.value.artist,
           game_blur_level: `${gameStep.value.step * 20}%`,
           game_type: 'standard',
-          game_image: selected_album.image
+          game_image: selected_album.value.image
 
         })
         newGame()
@@ -78,11 +83,11 @@ export default defineComponent ({
         addGameHistory({
           game_won: false,
           game_points: points.value,
-          game_album_name: selected_album.name,
-          game_artist_name: selected_album.artist,
+          game_album_name: selected_album.value.name,
+          game_artist_name: selected_album.value.artist,
           game_blur_level: `${gameStep.value.step * 20}%`,
           game_type: 'standard',
-          game_image: selected_album.image
+          game_image: selected_album.value.image
         })
         newGame()
       }
@@ -95,7 +100,8 @@ export default defineComponent ({
 
     
 
-    return { gameStep, nextStep, blur_styling, points, album_guess, artist_guess, newGame, album_correct, artist_correct, handleGuessEntry, }
+    return { gameStep, nextStep, blur_styling, points, album_guess, 
+      artist_guess, newGame, album_correct, artist_correct, handleGuessEntry, }
   }
 })
 
