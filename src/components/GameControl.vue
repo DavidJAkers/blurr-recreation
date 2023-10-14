@@ -26,13 +26,14 @@ export default defineComponent ({
     const selected_album = computed(() => {
       return props.selected_album
     })
-    const game_init = { step: 5, blurlevel: "25px"}
+    const game_init = { step: 5, blurlevel: "20px"}
     const gameStep = ref<GameStep>(game_init)
     const points = ref<number>(0)
     const album_guess = ref<string>('')
     const artist_guess = ref<string>('')
     const album_correct = ref<boolean>(false)
     const artist_correct = ref<boolean>(false)
+
     const blur_styling = computed(() => {
       return "filter: blur(" + gameStep.value.blurlevel + ")"
     })
@@ -41,7 +42,7 @@ export default defineComponent ({
 
     const nextStep = () => {
       if (gameStep.value.step > 0) {
-        gameStep.value = {step: gameStep.value.step - 1, blurlevel: `${(gameStep.value.step - 1) * 5}px`}
+        gameStep.value = {step: gameStep.value.step - 1, blurlevel: `${(gameStep.value.step - 1) * 4}px`}
       }
     }
 
@@ -121,13 +122,13 @@ export default defineComponent ({
   </div>
   <div class="points">Points: {{ points }}</div>
   <div class="entry-forms">
-    <form>
+    <form autocomplete="off" v-on:submit.prevent>
       Album Name: 
-      <input type="text" name="album_name" v-model="album_guess" :disabled="album_correct">
+      <input type="text" name="album_name" v-model="album_guess" :disabled="album_correct" @keyup.enter="handleGuessEntry" autofocus>
     </form>
-    <form>
+    <form autocomplete="off" v-on:submit.prevent>
       Artist Name: 
-      <input type="text" name="artist_name" v-model="artist_guess" :disabled="artist_correct">
+      <input type="text" name="artist_name" v-model="artist_guess" :disabled="artist_correct" @keyup.enter="handleGuessEntry">
     </form>
   </div>
   <div class="game-buttons">
@@ -145,7 +146,7 @@ export default defineComponent ({
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 5px 0 15px 0;
+  padding: 10px 0 10px 0;
 }
 .image-container {
   width: 240px;
@@ -162,10 +163,7 @@ export default defineComponent ({
   gap: 3rem;
   padding-top: 5px;
 }
-input:disabled {
-  background-color: rgb(94, 153, 36);
-  color: linen;
-}
+
 .points {
   display: flex;
   justify-content: center;
@@ -177,6 +175,15 @@ input:disabled {
   flex-direction: column;
   align-items: flex-end;
   gap: 2px;
+}
+.entry-forms input {
+  border: none;
+  outline: none;
+}
+.entry-forms input:disabled {
+  background-color: rgb(94, 153, 36);
+  color: linen;
+  
 }
 .game-buttons {
   display: flex;

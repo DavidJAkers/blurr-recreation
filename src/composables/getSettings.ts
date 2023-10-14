@@ -9,7 +9,7 @@ const getSettings = (genre_list: Genre[], decade_list: Decade[]) => {
 
   const genre_val = genre_list[genre_index]
   const decade_val = decade_list[decade_index]
-  const fetch_index_val = Math.floor(Math.random() * 8)
+  const fetch_index_val = Math.floor(Math.random() * 9)
   return { genre_val, decade_val, fetch_index_val }
 }
 

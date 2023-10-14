@@ -2,6 +2,8 @@
 import { defineComponent, watch, watchEffect, ref, computed, } from 'vue';
 import HeaderBar from './components/HeaderBar.vue'
 import GameControl from './components/GameControl.vue'
+import Modal from './components/Modal.vue'
+import ToggleSwitch from './components/ToggleSwitch.vue'
 import { type Genre } from './types/Genre'
 import { type Decade } from './types/Decade'
 import { type AlbumData } from './types/AlbumData'
@@ -15,20 +17,33 @@ import formatData from './composables/formatData';
 
 export default defineComponent({
   name: 'App',
-  components: { HeaderBar, GameControl },
+  components: { HeaderBar, GameControl, Modal, ToggleSwitch },
   setup() {
+    const show_how = ref<boolean>(false)
+    const show_stats = ref<boolean>(false)
+    const show_settings = ref<boolean>(false)
+
+    const toggleShowHow = () => {
+      show_how.value = !show_how.value
+      console.log('clicked')
+    }
+    const toggleShowStats = () => {
+      show_stats.value = !show_stats.value
+    }
+    const toggleShowSettings = () => {
+      show_settings.value = !show_settings.value
+    }
+
+
     const genre = ref<Genre | null>(null)
     const decade = ref<Decade | null>(null)
     const fetch_index = ref<number | null>(null)
 
     const error = ref<Error | null>(null)
 
-    watch(error, () => {
-      console.log(error.value, "from app")
-    })
-
     const genre_list = ["Pop", "Rock", "Electronic"] as Genre[]
     const decade_list = ["1980's", "1990's", "2000's", "2010's", "2020's"] as Decade[]
+
     const game_history = ref<GameHistory[]>([])
 
     const { genre_val, decade_val, fetch_index_val } = getSettings(genre_list, decade_list)
@@ -56,7 +71,11 @@ export default defineComponent({
     const refreshSettings = () => {
       const { genre_val, decade_val, fetch_index_val } = getSettings(genre_list, decade_list)
       if (!genre_selected.value) genre.value = genre_val
+      if (decade_val === decade.value) {
+        year.value === getYear(decade.value)
+      }
       if (!decade_selected.value) decade.value = decade_val
+
       fetch_index.value = fetch_index_val
 
       //Changes year even if decade is selected 
@@ -94,17 +113,23 @@ export default defineComponent({
 
     const addGameHistory = (game: GameHistory) => {
       game_history.value.push(game)
+      toggleShowStats()
     }
 
-    watchEffect(() => {
-      if (game_history.value.length) console.log(game_history.value)
-    })
+    const dev_mode = ref<boolean>(false)
+    const hard_mode = ref<boolean>(false)
 
+    watchEffect(() =>{
+      console.log('Dev mode -', dev_mode.value)
+      console.log('Hard mode -', hard_mode.value)
+    })
 
     return {
       genre, decade, genre_list, decade_list, selected_album,
       refreshSettings, genre_selected, decade_selected, genreSelectChange,
-      decadeSelectChange, addGameHistory, error
+      decadeSelectChange, game_history, addGameHistory, error, show_how, show_stats, 
+      show_settings, toggleShowHow, toggleShowStats, toggleShowSettings, dev_mode, 
+      hard_mode
     }
 
   },
@@ -114,7 +139,8 @@ export default defineComponent({
 </script>
 <template>
   <div class="main">
-    <HeaderBar />
+    <HeaderBar :toggleShowHow="toggleShowHow" :toggleShowStats="toggleShowStats" :toggleShowSettings="toggleShowSettings" />
+  
     <div class="setting-titles">
       <p>Genre</p>
       <p>Decade</p>
@@ -127,10 +153,52 @@ export default defineComponent({
         <option v-for="(decade, index) in decade_list" :key="index">{{ decade }}</option>
       </select>
     </div>
-    <GameControl v-if="selected_album !== null" :selected_album="selected_album" :refreshSettings="refreshSettings"
+
+    <div class="error-message" v-if="error">{{ error.message }}</div>
+    <GameControl v-else-if="selected_album !== null" :selected_album="selected_album" :refreshSettings="refreshSettings"
       :addGameHistory="addGameHistory" />
-    <div class="error-message" v-else-if="error">{{ error.message }}</div>
   </div>
+  <div v-if="dev_mode" class="dev-answers">
+    <p v-if="selected_album">Album - {{ selected_album.name }}</p>
+    <p v-if="selected_album">Artist - {{ selected_album.artist }}</p>
+  </div>
+
+
+  <div v-if="show_how">
+      <Modal @closemodal="toggleShowHow">
+        <h2>How to Play</h2>
+      </Modal>
+    </div>
+    <div v-if="show_stats">
+      <Modal @closemodal="toggleShowStats">
+        <h2>Statistics</h2>
+          <div v-if="game_history.length">
+            <h3 style="color: crimson" v-if="!game_history[game_history.length -1].game_won">You Lost - {{ game_history[game_history.length -1].game_points }} points </h3>
+            <h3  style="color: green" v-else>You Won - {{ game_history[game_history.length -1].game_points }} points</h3> 
+          </div>
+      </Modal>
+    </div>
+    <div v-if="show_settings">
+      <Modal @closemodal="toggleShowSettings">
+        <h2>Settings</h2>
+        <div class="settings-modal">
+          <div class="settings-row">
+            <div class="settings-description">
+              <p>Developer Mode</p>
+              <p class="settings-subtext">Shows answers automatically</p>
+            </div>
+            <ToggleSwitch v-model="dev_mode"/> 
+          </div>
+          <div class="settings-row">
+            <div class="settings-description">
+              <p>Hard Mode</p>
+              <p class="settings-subtext">Limits to one Guess</p>
+            </div>
+            <ToggleSwitch v-model="hard_mode"/> 
+          </div>
+        </div>
+      </Modal>
+    </div>
 </template>
 
 <style scoped>
@@ -175,5 +243,13 @@ select {
     padding-top: 50px;
     font-size: 30px
   }
+}
+.dev-answers {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.dev-answers p {
+  margin: 0
 }
 </style>
