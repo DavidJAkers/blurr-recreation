@@ -19,12 +19,19 @@ export default defineComponent ({
     addGameHistory: {
       required: true,
       type: Function
+    },
+    hard_mode: {
+      required: true,
+      type: Boolean
     }
   },
   setup(props) {
     const {refreshSettings, addGameHistory} = props
     const selected_album = computed(() => {
       return props.selected_album
+    })
+    const hard_mode = computed(() => {
+      return props.hard_mode
     })
     const game_init = { step: 5, blurlevel: "20px"}
     const gameStep = ref<GameStep>(game_init)
@@ -39,6 +46,7 @@ export default defineComponent ({
     })
 
     watchEffect(() => console.log(selected_album.value.name, '-', selected_album.value.artist))
+    watchEffect(()=> console.log('Hard mode in game-control', hard_mode.value))
 
     const nextStep = () => {
       if (gameStep.value.step > 0) {

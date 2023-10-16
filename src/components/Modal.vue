@@ -61,13 +61,16 @@
     user-select: none;
     cursor: pointer;
   }
-  .modal h2, h3 {
+  .modal h2 {
     text-align: center;
     font-weight: 700;
     letter-spacing: .5px;
     text-transform: uppercase;
     font-size: 20px;
-
+  }
+  .victory-message h3 {
+    text-align: center;
+    font-size: 26px;
   }
   .settings-modal {
     display: flex;
@@ -88,4 +91,5 @@
     font-size: 12px;
     color: #818384
   }
+  
 </style>

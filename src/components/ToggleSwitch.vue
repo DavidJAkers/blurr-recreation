@@ -3,18 +3,17 @@ import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'ToggleSwitch',
-  emits: ['update:modelValue'],
+  emits: ['updateValue'],
   props: {
-    modelValue: {
+    value: {
       required: true,
       type: Boolean
     }
   },
   setup(props, {emit}) {
-    const updateValue = (e: Event) => {
-      emit('update:modelValue', (e.target as HTMLInputElement).checked)
+    const updateValue = () => {
+      emit('updateValue')
     }
-
     return {updateValue}
   }
 })
@@ -26,7 +25,7 @@ export default defineComponent({
 
 <template>
   <label class="switch">
-    <input type="checkbox" :value="modelValue" @input="updateValue">
+    <input type="checkbox" :value="value" @input="updateValue">
     <span class="slider round"></span>
   </label>
 </template>

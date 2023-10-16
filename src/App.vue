@@ -3,7 +3,9 @@ import { defineComponent, watch, watchEffect, ref, computed, } from 'vue';
 import HeaderBar from './components/HeaderBar.vue'
 import GameControl from './components/GameControl.vue'
 import Modal from './components/Modal.vue'
-import ToggleSwitch from './components/ToggleSwitch.vue'
+import HowtoPlayModal from './components/HowtoPlayModal.vue'
+import StatsModal from './components/StatsModal.vue'
+import SettingsModal from './components/SettingsModal.vue'
 import { type Genre } from './types/Genre'
 import { type Decade } from './types/Decade'
 import { type AlbumData } from './types/AlbumData'
@@ -17,7 +19,7 @@ import formatData from './composables/formatData';
 
 export default defineComponent({
   name: 'App',
-  components: { HeaderBar, GameControl, Modal, ToggleSwitch },
+  components: { HeaderBar, GameControl, Modal, HowtoPlayModal, StatsModal, SettingsModal },
   setup() {
     const show_how = ref<boolean>(false)
     const show_stats = ref<boolean>(false)
@@ -119,6 +121,14 @@ export default defineComponent({
     const dev_mode = ref<boolean>(false)
     const hard_mode = ref<boolean>(false)
 
+    const toggleDevMode = () => {
+      dev_mode.value = !dev_mode.value
+    }
+
+    const toggleHardMode = () => {
+      hard_mode.value = !hard_mode.value
+    }
+
     watchEffect(() =>{
       console.log('Dev mode -', dev_mode.value)
       console.log('Hard mode -', hard_mode.value)
@@ -129,7 +139,7 @@ export default defineComponent({
       refreshSettings, genre_selected, decade_selected, genreSelectChange,
       decadeSelectChange, game_history, addGameHistory, error, show_how, show_stats, 
       show_settings, toggleShowHow, toggleShowStats, toggleShowSettings, dev_mode, 
-      hard_mode
+      hard_mode, toggleDevMode, toggleHardMode
     }
 
   },
@@ -155,8 +165,10 @@ export default defineComponent({
     </div>
 
     <div class="error-message" v-if="error">{{ error.message }}</div>
+
     <GameControl v-else-if="selected_album !== null" :selected_album="selected_album" :refreshSettings="refreshSettings"
-      :addGameHistory="addGameHistory" />
+      :addGameHistory="addGameHistory" :hard_mode="hard_mode" />
+
   </div>
   <div v-if="dev_mode" class="dev-answers">
     <p v-if="selected_album">Album - {{ selected_album.name }}</p>
@@ -166,37 +178,19 @@ export default defineComponent({
 
   <div v-if="show_how">
       <Modal @closemodal="toggleShowHow">
-        <h2>How to Play</h2>
+        <HowtoPlayModal />
       </Modal>
     </div>
+
     <div v-if="show_stats">
       <Modal @closemodal="toggleShowStats">
-        <h2>Statistics</h2>
-          <div v-if="game_history.length">
-            <h3 style="color: crimson" v-if="!game_history[game_history.length -1].game_won">You Lost - {{ game_history[game_history.length -1].game_points }} points </h3>
-            <h3  style="color: green" v-else>You Won - {{ game_history[game_history.length -1].game_points }} points</h3> 
-          </div>
+        <StatsModal :gameHistory="game_history" />
       </Modal>
     </div>
+
     <div v-if="show_settings">
       <Modal @closemodal="toggleShowSettings">
-        <h2>Settings</h2>
-        <div class="settings-modal">
-          <div class="settings-row">
-            <div class="settings-description">
-              <p>Developer Mode</p>
-              <p class="settings-subtext">Shows answers automatically</p>
-            </div>
-            <ToggleSwitch v-model="dev_mode"/> 
-          </div>
-          <div class="settings-row">
-            <div class="settings-description">
-              <p>Hard Mode</p>
-              <p class="settings-subtext">Limits to one Guess</p>
-            </div>
-            <ToggleSwitch v-model="hard_mode"/> 
-          </div>
-        </div>
+        <SettingsModal :dev_mode="dev_mode" :hard_mode="hard_mode" @toggleDev="toggleDevMode" @toggleHard="toggleHardMode"/>
       </Modal>
     </div>
 </template>
