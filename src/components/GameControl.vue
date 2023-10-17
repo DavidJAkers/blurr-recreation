@@ -1,119 +1,92 @@
-<script lang="ts">
-import { computed, defineComponent, ref, watchEffect } from 'vue';
-import type { PropType } from 'vue'
+<script setup lang="ts">
+import { computed, ref, watchEffect } from 'vue';
 import type { AlbumData } from '@/types/AlbumData';
 import type { GameStep } from '@/types/GameStep';
 import normalizeString from '@/composables/normalizeString'
 
-export default defineComponent ({
-  name: 'GameControl',
-  props: {
-    selected_album: {
-      required: true,
-      type: Object as PropType<AlbumData>
-    },
-    refreshSettings: {
-      required: true,
-      type: Function
-    },
-    addGameHistory: {
-      required: true,
-      type: Function
-    },
-    hard_mode: {
-      required: true,
-      type: Boolean
-    }
-  },
-  setup(props) {
-    const {refreshSettings, addGameHistory} = props
-    const selected_album = computed(() => {
-      return props.selected_album
-    })
-    const hard_mode = computed(() => {
-      return props.hard_mode
-    })
-    const game_init = { step: 5, blurlevel: "20px"}
-    const gameStep = ref<GameStep>(game_init)
-    const points = ref<number>(0)
-    const album_guess = ref<string>('')
-    const artist_guess = ref<string>('')
-    const album_correct = ref<boolean>(false)
-    const artist_correct = ref<boolean>(false)
+const props = defineProps<{selected_album: AlbumData; refreshSettings: Function; addGameHistory: Function; hard_mode: boolean}>()
 
-    const blur_styling = computed(() => {
-      return "filter: blur(" + gameStep.value.blurlevel + ")"
-    })
+const {refreshSettings, addGameHistory} = props
+const selected_album = computed(() => {
+  return props.selected_album
+})
+const hard_mode = computed(() => {
+  return props.hard_mode
+})
+const game_init = { step: 5, blurlevel: "20px"}
+const gameStep = ref<GameStep>(game_init)
+const points = ref<number>(0)
+const album_guess = ref<string>('')
+const artist_guess = ref<string>('')
+const album_correct = ref<boolean>(false)
+const artist_correct = ref<boolean>(false)
 
-    watchEffect(() => console.log(selected_album.value.name, '-', selected_album.value.artist))
-    watchEffect(()=> console.log('Hard mode in game-control', hard_mode.value))
-
-    const nextStep = () => {
-      if (gameStep.value.step > 0) {
-        gameStep.value = {step: gameStep.value.step - 1, blurlevel: `${(gameStep.value.step - 1) * 4}px`}
-      }
-    }
-
-    const newGame = () => {
-      gameStep.value = game_init
-      refreshSettings()
-      points.value = 0
-      album_correct.value = false
-      artist_correct.value = false
-    }
-
-    const handleGuessEntry = () => {
-      if (normalizeString(album_guess.value) === normalizeString(selected_album.value.name)) {
-        if (album_correct.value === false) {
-          points.value += gameStep.value.step
-          album_correct.value = true
-        }
-      }
-      if (normalizeString(artist_guess.value) === normalizeString(selected_album.value.artist)) {
-        if (artist_correct.value === false) {
-          points.value += gameStep.value.step
-          artist_correct.value = true
-        }
-      }
-      if (album_correct.value === true && artist_correct.value === true) {
-        addGameHistory({
-          game_won: true,
-          game_points: points.value,
-          game_album_name: selected_album.value.name,
-          game_artist_name: selected_album.value.artist,
-          game_blur_level: `${gameStep.value.step * 20}%`,
-          game_type: 'standard',
-          game_image: selected_album.value.image
-
-        })
-        newGame()
-      }
-      else if (gameStep.value.step === 1) {
-        addGameHistory({
-          game_won: false,
-          game_points: points.value,
-          game_album_name: selected_album.value.name,
-          game_artist_name: selected_album.value.artist,
-          game_blur_level: `${gameStep.value.step * 20}%`,
-          game_type: 'standard',
-          game_image: selected_album.value.image
-        })
-        newGame()
-      }
-      else {
-        nextStep()
-      }
-      album_guess.value = ''
-      artist_guess.value = ''
-    }
-
-    
-
-    return { gameStep, nextStep, blur_styling, points, album_guess, 
-      artist_guess, newGame, album_correct, artist_correct, handleGuessEntry, }
-  }
+const blur_styling = computed(() => {
+  return "filter: blur(" + gameStep.value.blurlevel + ")"
 })
 
+watchEffect(()=> console.log('Hard mode in game-control', hard_mode.value))
+
+const nextStep = () => {
+  if (gameStep.value.step > 0) {
+    gameStep.value = {step: gameStep.value.step - 1, blurlevel: `${(gameStep.value.step - 1) * 4}px`}
+  }
+}
+
+const newGame = () => {
+  gameStep.value = game_init
+  refreshSettings()
+  points.value = 0
+  album_correct.value = false
+  artist_correct.value = false
+}
+
+const handleGuessEntry = () => {
+  if (normalizeString(album_guess.value) === normalizeString(selected_album.value.name)) {
+    if (album_correct.value === false) {
+      points.value += gameStep.value.step
+      album_correct.value = true
+    }
+  }
+  if (normalizeString(artist_guess.value) === normalizeString(selected_album.value.artist)) {
+    if (artist_correct.value === false) {
+      points.value += gameStep.value.step
+      artist_correct.value = true
+    }
+  }
+  if (album_correct.value === true && artist_correct.value === true) {
+    addGameHistory({
+      game_won: true,
+      game_points: points.value,
+      game_album_name: selected_album.value.name,
+      game_artist_name: selected_album.value.artist,
+      game_blur_level: `${gameStep.value.step * 20}%`,
+      game_type: 'standard',
+      game_image: selected_album.value.image
+
+    })
+    newGame()
+  }
+  else if (gameStep.value.step === 1) {
+    addGameHistory({
+      game_won: false,
+      game_points: points.value,
+      game_album_name: selected_album.value.name,
+      game_artist_name: selected_album.value.artist,
+      game_blur_level: `${gameStep.value.step * 20}%`,
+      game_type: 'standard',
+      game_image: selected_album.value.image
+    })
+    newGame()
+  }
+  else {
+    nextStep()
+  }
+  album_guess.value = ''
+  artist_guess.value = ''
+}
+
+    
 </script>
 <template>
   <div class="game-info">

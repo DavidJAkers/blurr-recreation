@@ -1,34 +1,16 @@
-<script lang="ts">
-  import { defineComponent } from 'vue';
-  import ToggleSwitch from './ToggleSwitch.vue';
+<script setup lang="ts">
+// import ToggleSwitch from './ToggleSwitch.vue';
 
-  export default defineComponent({
-    name: 'SettingsModal',
-    components: { ToggleSwitch},
-    emits: ['toggleDev', 'toggleHard'],
-    props: {
-      dev_mode: {
-        required: true,
-        type: Boolean
-      },
-      hard_mode: {
-        required: true,
-        type: Boolean
-      }
-    },
-    setup(props, {emit}) {
-      const dev_toggle = () => {
-        emit('toggleDev')
-      }
+// const props = defineProps<{dev_mode: boolean; hard_mode: boolean}>()
+// const emit = defineEmits(['toggleDev', 'toggleHard'])
 
-      const hard_toggle = () => {
-        emit('toggleHard')
-      }
-  
-      return {dev_toggle, hard_toggle }
-    }
-    
-  })
+// const dev_toggle = () => {
+//   emit('toggleDev')
+// }
+
+// const hard_toggle = () => {
+//   emit('toggleHard')
+// }
 </script>
 
 <template>
@@ -39,14 +21,14 @@
           <p>Developer Mode</p>
           <p class="settings-subtext">Shows answers automatically</p>
         </div>
-        <ToggleSwitch :value="dev_mode" @updateValue="dev_toggle"/> 
+        <slot name="devSwitch" />
       </div>
       <div class="settings-row">
         <div class="settings-description">
           <p>Hard Mode</p>
           <p class="settings-subtext">Limits to one Guess</p>
         </div>
-        <ToggleSwitch :value="hard_mode" @updateValue="hard_toggle"/>
+        <slot name="modeSwitch" />
       </div>
     </div>
 </template>

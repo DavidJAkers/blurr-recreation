@@ -1,56 +1,46 @@
-<script lang="ts">
-import { defineComponent, ref } from 'vue';
-import type { PropType } from 'vue'
+<script setup lang="ts">
+import { ref } from 'vue';
 import type { GameHistory } from '@/types/GameHistory';
 
-export default defineComponent({
-  name: 'StatsModal',
-  props: {
-    gameHistory: {
-      required: true,
-      type: Array as PropType<GameHistory[]>
-    }
-  },
-  setup(props) {
-    const { gameHistory } = props
-    const last_game = ref<GameHistory | null>(null)
+const props = defineProps<{gameHistory: GameHistory[]}>()
+const { gameHistory } = props
+const last_game = ref<GameHistory | null>(null)
 
-    if (gameHistory.length) {
-      last_game.value = gameHistory[gameHistory.length - 1]
-    }
+if (gameHistory.length) {
+  last_game.value = gameHistory[gameHistory.length - 1]
+}
 
-    const calculateStats = () => {
-      let games_played = 0
-      let games_won = 0
-      let win_streak = 0
-      let max_streak = 0
+const calculateStats = () => {
+  let games_played = 0
+  let games_won = 0
+  let win_streak = 0
+  let max_streak = 0
 
-      for (let i = gameHistory.length-1; i>=0; i--) {
-        games_played += 1
-        if (gameHistory[i].game_won) {
-          games_won += 1
-          win_streak += 1
-          if (win_streak > max_streak) {
-            max_streak = win_streak
-          }
-        }
-        else {
-          win_streak = 0 
-        }
+  for (let i = gameHistory.length-1; i>=0; i--) {
+    games_played += 1
+    if (gameHistory[i].game_won) {
+      games_won += 1
+      win_streak += 1
+      if (win_streak > max_streak) {
+        max_streak = win_streak
       }
-       
-      return {
-        played: games_played,
-        won: games_won,
-        streak: max_streak,
-        win_percent: Math.floor((games_won / games_played) * 100)
-      }
-     
     }
-    return {last_game, calculateStats}
+    else {
+      win_streak = 0 
     }
+  }
+    
+  return {
+    played: games_played,
+    won: games_won,
+    streak: max_streak,
+    win_percent: Math.floor((games_won / games_played) * 100)
+  }
+  
+}
 
-})
+    
+
 
 </script>
 

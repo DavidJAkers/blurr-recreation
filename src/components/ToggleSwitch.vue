@@ -1,31 +1,15 @@
-<script lang="ts">
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-  name: 'ToggleSwitch',
-  emits: ['updateValue'],
-  props: {
-    value: {
-      required: true,
-      type: Boolean
-    }
-  },
-  setup(props, {emit}) {
-    const updateValue = () => {
-      emit('updateValue')
-    }
-    return {updateValue}
-  }
-})
-
-
-
+<script setup lang="ts">
+defineProps<{ value: boolean }>()
+const emit = defineEmits(['updateValue'])
+const updateValue = () => {
+  emit('updateValue')
+}
 
 </script>
 
 <template>
   <label class="switch">
-    <input type="checkbox" :value="value" @input="updateValue">
+    <input type="checkbox" :checked="value" @input="updateValue">
     <span class="slider round"></span>
   </label>
 </template>
@@ -71,15 +55,15 @@ export default defineComponent({
   transition: .2s;
 }
 
-input:checked + .slider {
+input:checked+.slider {
   background-color: #2196F3;
 }
 
-input:focus + .slider {
+input:focus+.slider {
   box-shadow: 0 0 1px #2196F3;
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
   -webkit-transform: translateX(13px);
   -ms-transform: translateX(13px);
   transform: translateX(13px);

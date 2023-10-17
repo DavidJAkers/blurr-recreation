@@ -2,10 +2,11 @@
 import { defineComponent, watch, watchEffect, ref, computed, } from 'vue';
 import HeaderBar from './components/HeaderBar.vue'
 import GameControl from './components/GameControl.vue'
-import Modal from './components/Modal.vue'
+import Modal from './components/ModalFrame.vue'
 import HowtoPlayModal from './components/HowtoPlayModal.vue'
 import StatsModal from './components/StatsModal.vue'
 import SettingsModal from './components/SettingsModal.vue'
+import ToggleSwitch from './components/ToggleSwitch.vue';
 import { type Genre } from './types/Genre'
 import { type Decade } from './types/Decade'
 import { type AlbumData } from './types/AlbumData'
@@ -19,7 +20,7 @@ import formatData from './composables/formatData';
 
 export default defineComponent({
   name: 'App',
-  components: { HeaderBar, GameControl, Modal, HowtoPlayModal, StatsModal, SettingsModal },
+  components: { HeaderBar, GameControl, Modal, HowtoPlayModal, StatsModal, SettingsModal, ToggleSwitch },
   setup() {
     const show_how = ref<boolean>(false)
     const show_stats = ref<boolean>(false)
@@ -129,11 +130,6 @@ export default defineComponent({
       hard_mode.value = !hard_mode.value
     }
 
-    watchEffect(() =>{
-      console.log('Dev mode -', dev_mode.value)
-      console.log('Hard mode -', hard_mode.value)
-    })
-
     return {
       genre, decade, genre_list, decade_list, selected_album,
       refreshSettings, genre_selected, decade_selected, genreSelectChange,
@@ -149,7 +145,7 @@ export default defineComponent({
 </script>
 <template>
   <div class="main">
-    <HeaderBar :toggleShowHow="toggleShowHow" :toggleShowStats="toggleShowStats" :toggleShowSettings="toggleShowSettings" />
+    <HeaderBar v-bind="{ toggleShowHow, toggleShowStats, toggleShowSettings }" />
   
     <div class="setting-titles">
       <p>Genre</p>
@@ -190,7 +186,14 @@ export default defineComponent({
 
     <div v-if="show_settings">
       <Modal @closemodal="toggleShowSettings">
-        <SettingsModal :dev_mode="dev_mode" :hard_mode="hard_mode" @toggleDev="toggleDevMode" @toggleHard="toggleHardMode"/>
+        <SettingsModal>
+            <template #devSwitch>
+              <ToggleSwitch :value="dev_mode" @updateValue="toggleDevMode"/> 
+            </template>
+            <template #modeSwitch>
+              <ToggleSwitch :value="hard_mode" @updateValue="toggleHardMode"/>
+            </template>
+        </SettingsModal>
       </Modal>
     </div>
 </template>
