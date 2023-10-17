@@ -1,16 +1,5 @@
 <script setup lang="ts">
-// import ToggleSwitch from './ToggleSwitch.vue';
 
-// const props = defineProps<{dev_mode: boolean; hard_mode: boolean}>()
-// const emit = defineEmits(['toggleDev', 'toggleHard'])
-
-// const dev_toggle = () => {
-//   emit('toggleDev')
-// }
-
-// const hard_toggle = () => {
-//   emit('toggleHard')
-// }
 </script>
 
 <template>

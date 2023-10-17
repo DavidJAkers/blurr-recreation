@@ -20,71 +20,23 @@ export default defineComponent({
   name: 'App',
   components: { HeaderBar, GameControl, Modal, HowtoPlayModal, StatsModal, SettingsModal, ToggleSwitch },
   setup() {
-    const show_how = ref<boolean>(false)
-    const show_stats = ref<boolean>(false)
-    const show_settings = ref<boolean>(false)
-
-    const toggleShowHow = () => {
-      show_how.value = !show_how.value
-      console.log('clicked')
-    }
-    const toggleShowStats = () => {
-      show_stats.value = !show_stats.value
-    }
-    const toggleShowSettings = () => {
-      show_settings.value = !show_settings.value
-    }
-
-
-    const genre = ref<Genre | null>(null)
-    const decade = ref<Decade | null>(null)
-    const fetch_index = ref<number | null>(null)
-
-    const error = ref<Error | null>(null)
-
     const genre_list = ["Pop", "Rock", "Electronic"] as Genre[]
     const decade_list = ["1980's", "1990's", "2000's", "2010's", "2020's"] as Decade[]
 
+    const show_how = ref<boolean>(false)
+    const show_stats = ref<boolean>(false)
+    const show_settings = ref<boolean>(false)
+    const genre = ref<Genre | null>(null)
+    const decade = ref<Decade | null>(null)
+    const fetch_index = ref<number | null>(null) 
+    const error = ref<Error | null>(null)
     const game_history = ref<GameHistory[]>([])
-
-    const { genre_val, decade_val, fetch_index_val } = getSettings(genre_list, decade_list)
-    genre.value = genre_val
-    decade.value = decade_val
-    fetch_index.value = fetch_index_val
-
     const year = ref<number | null>(null)
-    //calculates and assigns year value for the decade whenever decade updates and on load
-    watchEffect(() => {
-      if (decade.value) year.value = (getYear(decade.value))
-    })
-
     const genre_selected = ref<boolean>(false)
     const decade_selected = ref<boolean>(false)
-
-    const genreSelectChange = () => {
-      genre_selected.value = true
-    }
-    const decadeSelectChange = () => {
-      decade_selected.value = true
-    }
-
-
-    const refreshSettings = () => {
-      const { genre_val, decade_val, fetch_index_val } = getSettings(genre_list, decade_list)
-      if (!genre_selected.value) genre.value = genre_val
-      if (decade_val === decade.value) {
-        year.value === getYear(decade.value)
-      }
-      if (!decade_selected.value) decade.value = decade_val
-
-      fetch_index.value = fetch_index_val
-
-      //Changes year even if decade is selected 
-      if (decade_selected.value) {
-        if (decade.value) year.value = getYear(decade.value)
-      }
-    }
     const selected_album = ref<AlbumData | null>(null)
+    const dev_mode = ref<boolean>(false)
+    const hard_mode = ref<boolean>(false)
 
     const fetch_url = computed(() => {
       const url = new URL('https://api.discogs.com/database/search')
@@ -97,7 +49,63 @@ export default defineComponent({
       //'?type=master&genre=' + genre.value + '&year=' + year.value + '&per_page=9&page=1'
     })
 
+    const toggleShowHow = () => {
+      show_how.value = !show_how.value
+      console.log('clicked')
+    }
+    const toggleShowStats = () => {
+      show_stats.value = !show_stats.value
+    }
+    const toggleShowSettings = () => {
+      show_settings.value = !show_settings.value
+    }
 
+    const genreSelectChange = () => {
+      genre_selected.value = true
+    }
+    const decadeSelectChange = () => {
+      decade_selected.value = true
+    }
+
+    const toggleDevMode = () => {
+      dev_mode.value = !dev_mode.value
+    }
+
+    const toggleHardMode = () => {
+      hard_mode.value = !hard_mode.value
+    }
+
+    //assign new values to state according to if genre_selected or decade_selected === true
+    const refreshSettings = () => {
+      const { genre_val, decade_val, fetch_index_val } = getSettings(genre_list, decade_list)
+      if (!genre_selected.value) genre.value = genre_val
+
+      // if same decade, get a new year regardless
+      if (decade_val === decade.value) {
+        year.value === getYear(decade.value)
+      }
+      if (!decade_selected.value) decade.value = decade_val
+
+      fetch_index.value = fetch_index_val
+
+      //Changes year even if decade is selected 
+      if (decade_selected.value) {
+        if (decade.value) year.value = getYear(decade.value)
+      }
+    }
+
+    //push new game to game_history, show stats at end of every game
+    const addGameHistory = (game: GameHistory) => {
+      game_history.value.push(game)
+      toggleShowStats()
+    }
+
+    //calculates and assigns year value for the decade whenever decade updates and on load
+    watchEffect(() => {
+      if (decade.value) year.value = (getYear(decade.value))
+    })
+
+    //fetches new data whenever url changes + formats and assigns fetched data to state / assign fetch error to state
     watch(fetch_url, async () => {
       const { data, fetch_error } = await fetchData(fetch_url.value)
       if (data.value && fetch_index.value && genre.value && year.value) {
@@ -111,23 +119,11 @@ export default defineComponent({
 
     }, { immediate: true })
 
-
-    const addGameHistory = (game: GameHistory) => {
-      game_history.value.push(game)
-      console.log(game_history.value)
-      toggleShowStats()
-    }
-
-    const dev_mode = ref<boolean>(false)
-    const hard_mode = ref<boolean>(false)
-
-    const toggleDevMode = () => {
-      dev_mode.value = !dev_mode.value
-    }
-
-    const toggleHardMode = () => {
-      hard_mode.value = !hard_mode.value
-    }
+    // assign settings values from getSettings to state
+    const { genre_val, decade_val, fetch_index_val } = getSettings(genre_list, decade_list)
+    genre.value = genre_val
+    decade.value = decade_val
+    fetch_index.value = fetch_index_val
 
     return {
       genre, decade, genre_list, decade_list, selected_album,

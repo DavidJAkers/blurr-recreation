@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type { AlbumData } from '@/types/AlbumData';
 import type { GameStep } from '@/types/GameStep';
 import normalizeString from '@/composables/normalizeString'
@@ -25,14 +25,14 @@ const blur_styling = computed(() => {
   return "filter: blur(" + gameStep.value.blurlevel + ")"
 })
 
-watchEffect(()=> console.log('Hard mode in game-control', hard_mode.value))
-
+//Assigns gameStep state to next step values
 const nextStep = () => {
   if (gameStep.value.step > 0) {
     gameStep.value = {step: gameStep.value.step - 1, blurlevel: `${(gameStep.value.step - 1) * 4}px`}
   }
 }
 
+//Sets state for new game
 const newGame = () => {
   gameStep.value = game_init
   refreshSettings()
@@ -41,12 +41,7 @@ const newGame = () => {
   artist_correct.value = false
 }
 
-watch(hard_mode, () => {
-      newGame()
-      album_guess.value = ''
-      artist_guess.value = ''
-    })
-
+// Handles state events based on state, including hard mode and non-hard mode handling
 const handleGuessEntry = () => {
   //Handle hard-mode
   if (hard_mode.value === true) {
@@ -95,6 +90,7 @@ const handleGuessEntry = () => {
       nextStep()
     }
   }
+  //Non-hard mode
   else {
   if (normalizeString(album_guess.value) === normalizeString(selected_album.value.name)) {
     if (album_correct.value === false) {
@@ -140,6 +136,13 @@ const handleGuessEntry = () => {
   album_guess.value = ''
   artist_guess.value = ''
 }
+
+//Makes new game whenever hard_mode is changed
+watch(hard_mode, () => {
+      newGame()
+      album_guess.value = ''
+      artist_guess.value = ''
+    })
 
     
 </script>
