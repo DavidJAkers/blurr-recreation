@@ -16,8 +16,6 @@ import getSettings from './composables/getSettings'
 import fetchData from './composables/fetchData'
 import formatData from './composables/formatData';
 
-
-
 export default defineComponent({
   name: 'App',
   components: { HeaderBar, GameControl, Modal, HowtoPlayModal, StatsModal, SettingsModal, ToggleSwitch },
@@ -116,6 +114,7 @@ export default defineComponent({
 
     const addGameHistory = (game: GameHistory) => {
       game_history.value.push(game)
+      console.log(game_history.value)
       toggleShowStats()
     }
 

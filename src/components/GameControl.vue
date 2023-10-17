@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from 'vue';
+import { computed, ref, watchEffect, watch } from 'vue';
 import type { AlbumData } from '@/types/AlbumData';
 import type { GameStep } from '@/types/GameStep';
 import normalizeString from '@/composables/normalizeString'
@@ -41,7 +41,61 @@ const newGame = () => {
   artist_correct.value = false
 }
 
+watch(hard_mode, () => {
+      newGame()
+      album_guess.value = ''
+      artist_guess.value = ''
+    })
+
 const handleGuessEntry = () => {
+  //Handle hard-mode
+  if (hard_mode.value === true) {
+    if (album_guess.value.length || artist_guess.value.length) {
+      if (normalizeString(album_guess.value) === normalizeString(selected_album.value.name) &&
+      normalizeString(artist_guess.value) === normalizeString(selected_album.value.artist)) {
+
+          points.value = gameStep.value.step * 2
+        addGameHistory({
+          game_won: true,
+          game_points: points.value,
+          game_album_name: selected_album.value.name,
+          game_artist_name: selected_album.value.artist,
+          game_blur_level: `${gameStep.value.step * 20}%`,
+          game_type: 'hard',
+          game_image: selected_album.value.image
+        })
+      }
+      else {
+        addGameHistory( {
+          game_won: false,
+          game_points: points.value,
+          game_album_name: selected_album.value.name,
+          game_artist_name: selected_album.value.artist,
+          game_blur_level: `${gameStep.value.step * 20}%`,
+          game_type: 'hard',
+          game_image: selected_album.value.image
+        })
+      }
+      newGame()
+      album_guess.value = ''
+      artist_guess.value = ''
+
+    } else if (gameStep.value.step === 1){
+      addGameHistory( {
+          game_won: false,
+          game_points: points.value,
+          game_album_name: selected_album.value.name,
+          game_artist_name: selected_album.value.artist,
+          game_blur_level: `${gameStep.value.step * 20}%`,
+          game_type: 'hard',
+          game_image: selected_album.value.image
+        })
+        newGame()
+    } else {
+      nextStep()
+    }
+  }
+  else {
   if (normalizeString(album_guess.value) === normalizeString(selected_album.value.name)) {
     if (album_correct.value === false) {
       points.value += gameStep.value.step
@@ -82,6 +136,7 @@ const handleGuessEntry = () => {
   else {
     nextStep()
   }
+}
   album_guess.value = ''
   artist_guess.value = ''
 }
@@ -91,7 +146,8 @@ const handleGuessEntry = () => {
 <template>
   <div class="game-info">
     <div>Blur level: {{ gameStep.step * 20 }}%</div>
-    <div>Guesses remaining: {{ gameStep.step }}</div>
+    <div v-if="!hard_mode">Guesses remaining: {{ gameStep.step }}</div>
+    <div v-else>Guesses remaining: 1</div>
   </div>
   <div class="image-container">
     <img class="main-image" :src="selected_album.image" alt="Blurred" width="240" :style="blur_styling" />  
@@ -105,7 +161,7 @@ const handleGuessEntry = () => {
   <div class="entry-forms">
     <form autocomplete="off" v-on:submit.prevent>
       Album Name: 
-      <input type="text" name="album_name" v-model="album_guess" :disabled="album_correct" @keyup.enter="handleGuessEntry" autofocus>
+      <input type="text" name="album_name" v-model="album_guess" :disabled="album_correct" @keyup.enter="handleGuessEntry" :placeholder="album_correct ?selected_album.name : ''" autofocus>
     </form>
     <form autocomplete="off" v-on:submit.prevent>
       Artist Name: 
@@ -114,7 +170,7 @@ const handleGuessEntry = () => {
   </div>
   <div class="game-buttons">
     <div>
-      <button @click="handleGuessEntry">Guess</button>
+      <button @click="handleGuessEntry" :style="hard_mode === true && (album_guess.length || artist_guess.length) ? 'background: red' : ''">Guess</button>
     </div>
     <div>
       <button @click="newGame">New Game</button>
@@ -133,7 +189,7 @@ const handleGuessEntry = () => {
   width: 240px;
   height: 240px;
   overflow: hidden;
-  border: 2px solid;
+  border: 2px solid white;
   display: block;
   margin-left: auto;
   margin-right: auto;
@@ -163,8 +219,11 @@ const handleGuessEntry = () => {
 }
 .entry-forms input:disabled {
   background-color: rgb(94, 153, 36);
-  color: linen;
-  
+}
+.entry-forms input::placeholder {
+  color: white;
+  font-weight: 600;
+  opacity: 1;
 }
 .game-buttons {
   display: flex;

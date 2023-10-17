@@ -24,7 +24,7 @@
   h3 {
     font-weight: 600;
     font-size: 18px;
-    padding-top: 5px;
+    padding-top: 15px;
   }
   p {
     font-size: 16px;
