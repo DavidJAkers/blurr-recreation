@@ -1,25 +1,26 @@
-# blurr-recreation
+# Blurr Game Recreation
+Recreation of Blurr App using Vue3 and Typescript
 
-This template should help get you started developing with Vue 3 in Vite.
+## New Features
+-Menu bar with modal components
 
-## Recommended IDE Setup
+-Developer mode
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+-'How to play' instructions
 
-## Type Support for `.vue` Imports in TS
+-Some changes to styling
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+## Bug fixes
+-Fixed bug allowing user to change to hardmode mid-game, now starts new game on hardmode change.
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
+-No longer loads new game data on modal change, showing user fetch loading of image once they exit stats view
 
-1. Disable the built-in TypeScript Extension
-    1) Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2) Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+## Potential future changes
+-Fix bug that fetches data twice if both genre and year in the fetch url change at once
 
-## Customize configuration
+-Find fix to 'New Game' sometimes not fetching new data
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+-Rework with different API that has search functionality with more relevant results (Spotify API fulfills some of this, but has its own issues)
 
 ## Project Setup
 
