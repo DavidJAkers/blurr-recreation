@@ -23,7 +23,7 @@ export default function useDiscogs() {
     //'?type=master&genre=' + genre.value + '&year=' + year.value + '&per_page=9&page=1'
   }
 
-  const getAlbumDataFromResponse = (data: ResponseData[], genre: Genre, year: number) => {
+  const formatAlbumData = (data: ResponseData[], genre: Genre, year: number) => {
     const fetch_index = Math.floor(Math.random() * FETCH_COUNT)
 
     // Fetch returns title as artist - album title, this splits it into two strings
@@ -60,7 +60,7 @@ export default function useDiscogs() {
 
       const queried_data = await response.json()
       const responseData = queried_data.results as ResponseData[]
-      selected_album.value = getAlbumDataFromResponse(responseData, genre, year)
+      selected_album.value = formatAlbumData(responseData, genre, year)
     } catch (err) {
       if (err instanceof Error) {
         error.value = err
