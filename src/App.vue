@@ -15,24 +15,15 @@ import useDiscogs from './composables/useDiscogs'
 
 export default defineComponent({
   name: 'App',
-  components: {
-    HeaderBar,
-    GameControl,
-    Modal,
-    HowtoPlayModal,
-    StatsModal,
-    SettingsModal,
-    ToggleSwitch
-  },
+  components: { HeaderBar, GameControl, Modal, HowtoPlayModal, StatsModal, SettingsModal, ToggleSwitch },
   setup() {
     const { error, selected_album, getRandomDecade, getRandomGenre, refreshAlbum } = useDiscogs()
-
-    const genre = ref<Genre>(getRandomGenre())
-    const decade = ref<Decade>(getRandomDecade())
 
     const show_how = ref<boolean>(false)
     const show_stats = ref<boolean>(false)
     const show_settings = ref<boolean>(false)
+    const genre = ref<Genre>(getRandomGenre())
+    const decade = ref<Decade>(getRandomDecade())
 
     const game_history = ref<GameHistory[]>([])
     const dev_mode = ref<boolean>(false)
@@ -71,25 +62,10 @@ export default defineComponent({
     watch(genre, () => refreshAlbum({ genre: genre.value }))
 
     return {
-      genre,
-      decade,
-      genres,
-      decades,
-      selected_album,
-      refreshAlbum,
-      game_history,
-      addGameHistory,
-      error,
-      show_how,
-      show_stats,
-      show_settings,
-      toggleShowHow,
-      toggleShowStats,
-      toggleShowSettings,
-      dev_mode,
-      hard_mode,
-      toggleDevMode,
-      toggleHardMode
+      genre, decade, genres, decades, selected_album,
+      refreshAlbum, game_history, addGameHistory, error, show_how, show_stats, 
+      show_settings, toggleShowHow, toggleShowStats, toggleShowSettings, dev_mode, 
+      hard_mode, toggleDevMode, toggleHardMode
     }
   }
 })

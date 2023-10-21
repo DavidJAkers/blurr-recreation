@@ -50,7 +50,7 @@ export default function useDiscogs() {
     return album_data
   }
 
-  const fetchAlbum = async (genre: Genre, year: number) => {
+  const fetchAlbums = async (genre: Genre, year: number) => {
     const controller = new AbortController()
 
     const fetch_url = get_fetch_url(genre, year)
@@ -85,9 +85,8 @@ export default function useDiscogs() {
     const year = getYear(decade)
 
     try {
-      const responseData = await fetchAlbum(genre, year)
-      const albumData = getAlbumDataFromResponse(responseData, genre, year)
-      selected_album.value = albumData
+      const responseData = await fetchAlbums(genre, year)
+      selected_album.value = getAlbumDataFromResponse(responseData, genre, year)
     } catch (err) {
       if (err instanceof Error) {
         error.value = err
