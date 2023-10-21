@@ -17,7 +17,8 @@ export default defineComponent({
   name: 'App',
   components: { HeaderBar, GameControl, Modal, HowtoPlayModal, StatsModal, SettingsModal, ToggleSwitch },
   setup() {
-    const { error, selected_album, fetchAlbum } = useDiscogs()
+    const { error: errorA, selected_album: selected_album_a, fetchAlbum: fetchAlbumA } = useDiscogs()
+    const { error: errorB, selected_album: selected_album_b, fetchAlbum: fetchAlbumB } = useDiscogs()
 
     const show_how = ref<boolean>(false)
     const show_stats = ref<boolean>(false)
@@ -66,7 +67,8 @@ export default defineComponent({
     const refreshSettings = async (options?: { genre?: Genre; decade?: Decade }) => {
       decade.value = options?.decade ?? getRandomDecade()
       genre.value = options?.genre ?? getRandomGenre()
-      await fetchAlbum(genre.value, decade.value)
+      await fetchAlbumA(genre.value, decade.value)
+      await fetchAlbumB(genre.value, decade.value)
     }
 
     onMounted(async () => {
@@ -74,8 +76,8 @@ export default defineComponent({
     })
 
     return {
-      genre, decade, genres, decades, selected_album,
-      refreshSettings, game_history, addGameHistory, error, show_how, show_stats, 
+      genre, decade, genres, decades, selected_album_a, selected_album_b,
+      refreshSettings, game_history, addGameHistory, errorA, errorB, show_how, show_stats, 
       show_settings, toggleShowHow, toggleShowStats, toggleShowSettings, dev_mode, 
       hard_mode, toggleDevMode, toggleHardMode
     }
@@ -99,16 +101,22 @@ export default defineComponent({
       </select>
     </div>
 
-    <div class="error-message" v-if="error">{{ error.message }}</div>
-
-    <GameControl v-else-if="selected_album !== null" :selected_album="selected_album" :refreshSettings="refreshSettings"
+    <div class="error-message" v-if="errorA">{{ errorA.message }}</div>
+    <GameControl v-else-if="selected_album_a !== null" :selected_album="selected_album_a" :refreshSettings="refreshSettings"
       :addGameHistory="addGameHistory" :hard_mode="hard_mode" />
+    <div v-if="dev_mode" class="dev-answers">
+      <p v-if="selected_album_a">Album - {{ selected_album_a.name }}</p>
+      <p v-if="selected_album_a">Artist - {{ selected_album_a.artist }}</p>
+    </div>
 
-  </div>
-  <div v-if="dev_mode" class="dev-answers">
-    <p v-if="selected_album">Album - {{ selected_album.name }}</p>
-    <p v-if="selected_album">Artist - {{ selected_album.artist }}</p>
-  </div>
+    <div class="error-message" v-if="errorB">{{ errorB.message }}</div>
+    <GameControl v-else-if="selected_album_b !== null" :selected_album="selected_album_b" :refreshSettings="refreshSettings"
+      :addGameHistory="addGameHistory" :hard_mode="hard_mode" />
+    <div v-if="dev_mode" class="dev-answers">
+      <p v-if="selected_album_b">Album - {{ selected_album_b.name }}</p>
+      <p v-if="selected_album_b">Artist - {{ selected_album_b.artist }}</p>
+    </div>
+</div>
 
 
   <div v-if="show_how">
