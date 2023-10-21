@@ -6,7 +6,7 @@ import normalizeString from '@/composables/normalizeString'
 
 const props = defineProps<{selected_album: AlbumData; refreshSettings: Function; addGameHistory: Function; hard_mode: boolean}>()
 
-const { refreshSettings, addGameHistory} = props
+const {refreshSettings, addGameHistory} = props
 const selected_album = computed(() => {
   return props.selected_album
 })

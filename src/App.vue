@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, onMounted, ref, watch } from 'vue'
+import { defineComponent, onMounted, ref } from 'vue'
 import HeaderBar from './components/HeaderBar.vue'
 import GameControl from './components/GameControl.vue'
 import Modal from './components/ModalFrame.vue'
@@ -24,7 +24,6 @@ export default defineComponent({
     const show_settings = ref<boolean>(false)
     const genre = ref<Genre | undefined>()
     const decade = ref<Decade | undefined>()
-
     const game_history = ref<GameHistory[]>([])
     const dev_mode = ref<boolean>(false)
     const hard_mode = ref<boolean>(false)
@@ -74,7 +73,6 @@ export default defineComponent({
       await refreshSettings()
     })
 
-
     return {
       genre, decade, genres, decades, selected_album,
       refreshSettings, game_history, addGameHistory, error, show_how, show_stats, 
@@ -87,7 +85,7 @@ export default defineComponent({
 <template>
   <div class="main">
     <HeaderBar v-bind="{ toggleShowHow, toggleShowStats, toggleShowSettings }" />
-
+  
     <div class="setting-titles">
       <p>Genre</p>
       <p>Decade</p>
@@ -105,36 +103,38 @@ export default defineComponent({
 
     <GameControl v-else-if="selected_album !== null" :selected_album="selected_album" :refreshSettings="refreshSettings"
       :addGameHistory="addGameHistory" :hard_mode="hard_mode" />
+
   </div>
   <div v-if="dev_mode" class="dev-answers">
     <p v-if="selected_album">Album - {{ selected_album.name }}</p>
     <p v-if="selected_album">Artist - {{ selected_album.artist }}</p>
   </div>
 
+
   <div v-if="show_how">
-    <Modal @closemodal="toggleShowHow">
-      <HowtoPlayModal />
-    </Modal>
-  </div>
+      <Modal @closemodal="toggleShowHow">
+        <HowtoPlayModal />
+      </Modal>
+    </div>
 
-  <div v-if="show_stats">
-    <Modal @closemodal="toggleShowStats">
-      <StatsModal :gameHistory="game_history" />
-    </Modal>
-  </div>
+    <div v-if="show_stats">
+      <Modal @closemodal="toggleShowStats">
+        <StatsModal :gameHistory="game_history" />
+      </Modal>
+    </div>
 
-  <div v-if="show_settings">
-    <Modal @closemodal="toggleShowSettings">
-      <SettingsModal>
-        <template #devSwitch>
-          <ToggleSwitch :value="dev_mode" @updateValue="toggleDevMode" />
-        </template>
-        <template #modeSwitch>
-          <ToggleSwitch :value="hard_mode" @updateValue="toggleHardMode" />
-        </template>
-      </SettingsModal>
-    </Modal>
-  </div>
+    <div v-if="show_settings">
+      <Modal @closemodal="toggleShowSettings">
+        <SettingsModal>
+            <template #devSwitch>
+              <ToggleSwitch :value="dev_mode" @updateValue="toggleDevMode"/> 
+            </template>
+            <template #modeSwitch>
+              <ToggleSwitch :value="hard_mode" @updateValue="toggleHardMode"/>
+            </template>
+        </SettingsModal>
+      </Modal>
+    </div>
 </template>
 
 <style scoped>
@@ -152,6 +152,7 @@ select {
 .setting-titles {
   display: flex;
   gap: 4rem;
+
 }
 
 .setting-titles p {
@@ -176,7 +177,7 @@ select {
     color: crimson;
     font-weight: 600;
     padding-top: 50px;
-    font-size: 30px;
+    font-size: 30px
   }
 }
 .dev-answers {
@@ -185,6 +186,6 @@ select {
   align-items: center;
 }
 .dev-answers p {
-  margin: 0;
+  margin: 0
 }
 </style>
