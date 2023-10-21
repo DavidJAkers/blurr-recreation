@@ -3,10 +3,13 @@ import { computed, ref, watch } from 'vue';
 import type { AlbumData } from '@/types/AlbumData';
 import type { GameStep } from '@/types/GameStep';
 import normalizeString from '@/composables/normalizeString'
+import useDiscogs from '@/composables/useDiscogs';
 
-const props = defineProps<{selected_album: AlbumData; refreshSettings: Function; addGameHistory: Function; hard_mode: boolean}>()
+const props = defineProps<{selected_album: AlbumData; addGameHistory: Function; hard_mode: boolean}>()
 
-const {refreshSettings, addGameHistory} = props
+const { refreshAlbum } = useDiscogs()
+
+const { addGameHistory} = props
 const selected_album = computed(() => {
   return props.selected_album
 })
@@ -35,7 +38,7 @@ const nextStep = () => {
 //Sets state for new game
 const newGame = () => {
   gameStep.value = game_init
-  refreshSettings()
+  refreshAlbum()
   points.value = 0
   album_correct.value = false
   artist_correct.value = false
