@@ -1,5 +1,5 @@
-<script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+<script lang="ts">
+import { defineComponent, onMounted, ref, watch } from 'vue'
 import HeaderBar from './components/HeaderBar.vue'
 import GameControl from './components/GameControl.vue'
 import Modal from './components/ModalFrame.vue'
@@ -13,50 +13,86 @@ import { type GameHistory } from './types/GameHistory'
 
 import useDiscogs from './composables/useDiscogs'
 
-const { error, selected_album, getRandomDecade, getRandomGenre, refreshAlbum } = useDiscogs()
+export default defineComponent({
+  name: 'App',
+  components: {
+    HeaderBar,
+    GameControl,
+    Modal,
+    HowtoPlayModal,
+    StatsModal,
+    SettingsModal,
+    ToggleSwitch
+  },
+  setup() {
+    const { error, selected_album, getRandomDecade, getRandomGenre, refreshAlbum } = useDiscogs()
 
-const genre = ref<Genre>(getRandomGenre())
-const decade = ref<Decade>(getRandomDecade())
+    const genre = ref<Genre>(getRandomGenre())
+    const decade = ref<Decade>(getRandomDecade())
 
-const show_how = ref<boolean>(false)
-const show_stats = ref<boolean>(false)
-const show_settings = ref<boolean>(false)
+    const show_how = ref<boolean>(false)
+    const show_stats = ref<boolean>(false)
+    const show_settings = ref<boolean>(false)
 
-const game_history = ref<GameHistory[]>([])
-const dev_mode = ref<boolean>(false)
-const hard_mode = ref<boolean>(false)
+    const game_history = ref<GameHistory[]>([])
+    const dev_mode = ref<boolean>(false)
+    const hard_mode = ref<boolean>(false)
 
-const toggleShowHow = () => {
-  show_how.value = !show_how.value
-  console.log('clicked')
-}
-const toggleShowStats = () => {
-  show_stats.value = !show_stats.value
-}
-const toggleShowSettings = () => {
-  show_settings.value = !show_settings.value
-}
+    const toggleShowHow = () => {
+      show_how.value = !show_how.value
+      console.log('clicked')
+    }
+    const toggleShowStats = () => {
+      show_stats.value = !show_stats.value
+    }
+    const toggleShowSettings = () => {
+      show_settings.value = !show_settings.value
+    }
 
-const toggleDevMode = () => {
-  dev_mode.value = !dev_mode.value
-}
+    const toggleDevMode = () => {
+      dev_mode.value = !dev_mode.value
+    }
 
-const toggleHardMode = () => {
-  hard_mode.value = !hard_mode.value
-}
+    const toggleHardMode = () => {
+      hard_mode.value = !hard_mode.value
+    }
 
-//push new game to game_history, show stats at end of every game
-const addGameHistory = (game: GameHistory) => {
-  game_history.value.push(game)
-  toggleShowStats()
-}
+    //push new game to game_history, show stats at end of every game
+    const addGameHistory = (game: GameHistory) => {
+      game_history.value.push(game)
+      toggleShowStats()
+    }
 
-onMounted(async () => {
-  await refreshAlbum({ decade: decade.value, genre: genre.value })
+    onMounted(async () => {
+      await refreshAlbum({ decade: decade.value, genre: genre.value })
+    })
+
+    watch(decade, () => refreshAlbum({ decade: decade.value }))
+    watch(genre, () => refreshAlbum({ genre: genre.value }))
+
+    return {
+      genre,
+      decade,
+      genres,
+      decades,
+      selected_album,
+      refreshAlbum,
+      game_history,
+      addGameHistory,
+      error,
+      show_how,
+      show_stats,
+      show_settings,
+      toggleShowHow,
+      toggleShowStats,
+      toggleShowSettings,
+      dev_mode,
+      hard_mode,
+      toggleDevMode,
+      toggleHardMode
+    }
+  }
 })
-
-watch(decade, () => refreshAlbum({ decade: decade.value }))
-watch(genre, () => refreshAlbum({ genre: genre.value }))
 </script>
 <template>
   <div class="main">
