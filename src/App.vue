@@ -17,13 +17,13 @@ export default defineComponent({
   name: 'App',
   components: { HeaderBar, GameControl, Modal, HowtoPlayModal, StatsModal, SettingsModal, ToggleSwitch },
   setup() {
-    const { error, selected_album, getRandomDecade, getRandomGenre, refreshAlbum } = useDiscogs()
+    const { error, selected_album, fetchAlbum } = useDiscogs()
 
     const show_how = ref<boolean>(false)
     const show_stats = ref<boolean>(false)
     const show_settings = ref<boolean>(false)
-    const genre = ref<Genre>(getRandomGenre())
-    const decade = ref<Decade>(getRandomDecade())
+    const genre = ref<Genre | undefined>()
+    const decade = ref<Decade | undefined>()
 
     const game_history = ref<GameHistory[]>([])
     const dev_mode = ref<boolean>(false)
@@ -54,16 +54,30 @@ export default defineComponent({
       toggleShowStats()
     }
 
+    const getRandomGenre = () => {
+      const genre_index = Math.floor(Math.random() * genres.length)
+      return genres[genre_index]
+    }
+
+    const getRandomDecade = () => {
+      const decade_index = Math.floor(Math.random() * decades.length)
+      return decades[decade_index]
+    }
+
+    const refreshSettings = async (options?: { genre?: Genre; decade?: Decade }) => {
+      decade.value = options?.decade ?? getRandomDecade()
+      genre.value = options?.genre ?? getRandomGenre()
+      await fetchAlbum(genre.value, decade.value)
+    }
+
     onMounted(async () => {
-      await refreshAlbum({ decade: decade.value, genre: genre.value })
+      await refreshSettings()
     })
 
-    watch(decade, () => refreshAlbum({ decade: decade.value }))
-    watch(genre, () => refreshAlbum({ genre: genre.value }))
 
     return {
       genre, decade, genres, decades, selected_album,
-      refreshAlbum, game_history, addGameHistory, error, show_how, show_stats, 
+      refreshSettings, game_history, addGameHistory, error, show_how, show_stats, 
       show_settings, toggleShowHow, toggleShowStats, toggleShowSettings, dev_mode, 
       hard_mode, toggleDevMode, toggleHardMode
     }
@@ -79,22 +93,18 @@ export default defineComponent({
       <p>Decade</p>
     </div>
     <div class="setting-select">
-      <select v-model="genre">
+      <select v-model="genre" @change="refreshSettings({ genre })">
         <option v-for="(genre, index) in genres" :value="genre" :key="index">{{ genre }}</option>
       </select>
-      <select v-model="decade">
+      <select v-model="decade" @change="refreshSettings({ decade })">
         <option v-for="(decade, index) in decades" :key="index">{{ decade }}</option>
       </select>
     </div>
 
     <div class="error-message" v-if="error">{{ error.message }}</div>
 
-    <GameControl
-      v-else-if="selected_album !== null"
-      :selected_album="selected_album"
-      :addGameHistory="addGameHistory"
-      :hard_mode="hard_mode"
-    />
+    <GameControl v-else-if="selected_album !== null" :selected_album="selected_album" :refreshSettings="refreshSettings"
+      :addGameHistory="addGameHistory" :hard_mode="hard_mode" />
   </div>
   <div v-if="dev_mode" class="dev-answers">
     <p v-if="selected_album">Album - {{ selected_album.name }}</p>
