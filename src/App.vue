@@ -1,53 +1,32 @@
 <script lang="ts">
-import { defineComponent, watch, watchEffect, ref, computed, } from 'vue';
+import { defineComponent, onMounted, ref } from 'vue'
 import HeaderBar from './components/HeaderBar.vue'
 import GameControl from './components/GameControl.vue'
 import Modal from './components/ModalFrame.vue'
 import HowtoPlayModal from './components/HowtoPlayModal.vue'
 import StatsModal from './components/StatsModal.vue'
 import SettingsModal from './components/SettingsModal.vue'
-import ToggleSwitch from './components/ToggleSwitch.vue';
-import { type Genre } from './types/Genre'
-import { type Decade } from './types/Decade'
-import { type AlbumData } from './types/AlbumData'
-import { type GameHistory } from './types/GameHistory';
-import getYear from './composables/getYear';
-import getSettings from './composables/getSettings'
-import fetchData from './composables/fetchData'
-import formatData from './composables/formatData';
+import ToggleSwitch from './components/ToggleSwitch.vue'
+import { genres, type Genre } from './types/Genre'
+import { decades, type Decade } from './types/Decade'
+import { type GameHistory } from './types/GameHistory'
+
+import useDiscogs from './composables/useDiscogs'
 
 export default defineComponent({
   name: 'App',
   components: { HeaderBar, GameControl, Modal, HowtoPlayModal, StatsModal, SettingsModal, ToggleSwitch },
   setup() {
-    const genre_list = ["Pop", "Rock", "Electronic"] as Genre[]
-    const decade_list = ["1980's", "1990's", "2000's", "2010's", "2020's"] as Decade[]
+    const { error, selected_album, fetchAlbum } = useDiscogs()
 
     const show_how = ref<boolean>(false)
     const show_stats = ref<boolean>(false)
     const show_settings = ref<boolean>(false)
-    const genre = ref<Genre | null>(null)
-    const decade = ref<Decade | null>(null)
-    const fetch_index = ref<number | null>(null) 
-    const error = ref<Error | null>(null)
+    const genre = ref<Genre | undefined>()
+    const decade = ref<Decade | undefined>()
     const game_history = ref<GameHistory[]>([])
-    const year = ref<number | null>(null)
-    const genre_selected = ref<boolean>(false)
-    const decade_selected = ref<boolean>(false)
-    const selected_album = ref<AlbumData | null>(null)
     const dev_mode = ref<boolean>(false)
     const hard_mode = ref<boolean>(false)
-
-    const fetch_url = computed(() => {
-      const url = new URL('https://api.discogs.com/database/search')
-      url.searchParams.set('type', 'master')
-      if (genre.value) url.searchParams.set('genre', genre.value)
-      if (year.value) url.searchParams.set('year', year.value.toString())
-      url.searchParams.set('per_page', '9')
-      url.searchParams.set('page', '1')
-      return url
-      //'?type=master&genre=' + genre.value + '&year=' + year.value + '&per_page=9&page=1'
-    })
 
     const toggleShowHow = () => {
       show_how.value = !show_how.value
@@ -60,13 +39,6 @@ export default defineComponent({
       show_settings.value = !show_settings.value
     }
 
-    const genreSelectChange = () => {
-      genre_selected.value = true
-    }
-    const decadeSelectChange = () => {
-      decade_selected.value = true
-    }
-
     const toggleDevMode = () => {
       dev_mode.value = !dev_mode.value
     }
@@ -75,68 +47,40 @@ export default defineComponent({
       hard_mode.value = !hard_mode.value
     }
 
-    //assign new values to state according to if genre_selected or decade_selected === true
-    const refreshSettings = () => {
-      const { genre_val, decade_val, fetch_index_val } = getSettings(genre_list, decade_list)
-      if (!genre_selected.value) genre.value = genre_val
-
-      // if same decade, get a new year regardless
-      if (decade_val === decade.value) {
-        year.value === getYear(decade.value)
-      }
-      if (!decade_selected.value) decade.value = decade_val
-
-      fetch_index.value = fetch_index_val
-
-      //Changes year even if decade is selected 
-      if (decade_selected.value) {
-        if (decade.value) year.value = getYear(decade.value)
-      }
-    }
-
     //push new game to game_history, show stats at end of every game
     const addGameHistory = (game: GameHistory) => {
       game_history.value.push(game)
       toggleShowStats()
     }
 
-    //calculates and assigns year value for the decade whenever decade updates and on load
-    watchEffect(() => {
-      if (decade.value) year.value = (getYear(decade.value))
+    const getRandomGenre = () => {
+      const genre_index = Math.floor(Math.random() * genres.length)
+      return genres[genre_index]
+    }
+
+    const getRandomDecade = () => {
+      const decade_index = Math.floor(Math.random() * decades.length)
+      return decades[decade_index]
+    }
+
+    const refreshSettings = async (options?: { genre?: Genre; decade?: Decade }) => {
+      decade.value = options?.decade ?? getRandomDecade()
+      genre.value = options?.genre ?? getRandomGenre()
+      await fetchAlbum(genre.value, decade.value)
+    }
+
+    onMounted(async () => {
+      await refreshSettings()
     })
 
-    //fetches new data whenever url changes + formats and assigns fetched data to state / assign fetch error to state
-    watch(fetch_url, async () => {
-      const { data, fetch_error } = await fetchData(fetch_url.value)
-      if (data.value && fetch_index.value && genre.value && year.value) {
-        const { album_data } = formatData(data.value, fetch_index.value, genre.value, year.value)
-        selected_album.value = album_data
-      }
-      if (fetch_error.value) {
-        error.value = fetch_error.value
-      }
-
-
-    }, { immediate: true })
-
-    // assign settings values from getSettings to state
-    const { genre_val, decade_val, fetch_index_val } = getSettings(genre_list, decade_list)
-    genre.value = genre_val
-    decade.value = decade_val
-    fetch_index.value = fetch_index_val
-
     return {
-      genre, decade, genre_list, decade_list, selected_album,
-      refreshSettings, genre_selected, decade_selected, genreSelectChange,
-      decadeSelectChange, game_history, addGameHistory, error, show_how, show_stats, 
+      genre, decade, genres, decades, selected_album,
+      refreshSettings, game_history, addGameHistory, error, show_how, show_stats, 
       show_settings, toggleShowHow, toggleShowStats, toggleShowSettings, dev_mode, 
       hard_mode, toggleDevMode, toggleHardMode
     }
-
-  },
-
-}
-);
+  }
+})
 </script>
 <template>
   <div class="main">
@@ -147,11 +91,11 @@ export default defineComponent({
       <p>Decade</p>
     </div>
     <div class="setting-select">
-      <select v-model="genre" @change="genreSelectChange">
-        <option v-for="(genre, index) in genre_list" :value="genre" :key="index">{{ genre }}</option>
+      <select v-model="genre" @change="refreshSettings({ genre })">
+        <option v-for="(genre, index) in genres" :value="genre" :key="index">{{ genre }}</option>
       </select>
-      <select v-model="decade" @change="decadeSelectChange">
-        <option v-for="(decade, index) in decade_list" :key="index">{{ decade }}</option>
+      <select v-model="decade" @change="refreshSettings({ decade })">
+        <option v-for="(decade, index) in decades" :key="index">{{ decade }}</option>
       </select>
     </div>
 
