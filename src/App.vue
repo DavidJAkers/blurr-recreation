@@ -69,8 +69,8 @@ export default defineComponent({
 
     return {
       genre, decade, genres, decades, selected_album,
-      refreshSettings, addGameHistory, error, show_how, show_stats, 
-      show_settings, toggleShowHow, toggleShowStats, toggleShowSettings, dev_mode, 
+      refreshSettings, addGameHistory, error, show_how, show_stats,
+      show_settings, toggleShowHow, toggleShowStats, toggleShowSettings, dev_mode,
       hard_mode, toggleDevMode, toggleHardMode
     }
   }
@@ -79,7 +79,7 @@ export default defineComponent({
 <template>
   <div class="main">
     <HeaderBar v-bind="{ toggleShowHow, toggleShowStats, toggleShowSettings }" />
-  
+
     <div class="setting-titles">
       <p>Genre</p>
       <p>Decade</p>
@@ -96,7 +96,7 @@ export default defineComponent({
     <div class="error-message" v-if="error">{{ error.message }}</div>
 
     <GameControl v-else-if="selected_album !== null" :selected_album="selected_album" :refreshSettings="refreshSettings"
-      @addGameHistory="(game) => {addGameHistory(game), toggleShowStats()}" :hard_mode="hard_mode" />
+      @addGameHistory="(game) => { addGameHistory(game), toggleShowStats() }" :hard_mode="hard_mode" />
 
   </div>
   <div v-if="dev_mode" class="dev-answers">
@@ -106,29 +106,29 @@ export default defineComponent({
 
 
   <div v-if="show_how">
-      <Modal @closemodal="toggleShowHow">
-        <HowtoPlayModal />
-      </Modal>
-    </div>
+    <Modal @closemodal="toggleShowHow">
+      <HowtoPlayModal />
+    </Modal>
+  </div>
 
-    <div v-if="show_stats">
-      <Modal @closemodal="toggleShowStats">
-        <StatsModal />
-      </Modal>
-    </div>
+  <div v-if="show_stats">
+    <Modal @closemodal="toggleShowStats">
+      <StatsModal />
+    </Modal>
+  </div>
 
-    <div v-if="show_settings">
-      <Modal @closemodal="toggleShowSettings">
-        <SettingsModal>
-            <template #devSwitch>
-              <ToggleSwitch :value="dev_mode" @updateValue="toggleDevMode"/> 
-            </template>
-            <template #modeSwitch>
-              <ToggleSwitch :value="hard_mode" @updateValue="toggleHardMode"/>
-            </template>
-        </SettingsModal>
-      </Modal>
-    </div>
+  <div v-if="show_settings">
+    <Modal @closemodal="toggleShowSettings">
+      <SettingsModal>
+        <template #devSwitch>
+          <ToggleSwitch :value="dev_mode" @updateValue="toggleDevMode" />
+        </template>
+        <template #modeSwitch>
+          <ToggleSwitch :value="hard_mode" @updateValue="toggleHardMode" />
+        </template>
+      </SettingsModal>
+    </Modal>
+  </div>
 </template>
 
 <style scoped>
@@ -174,11 +174,13 @@ select {
     font-size: 30px
   }
 }
+
 .dev-answers {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
+
 .dev-answers p {
   margin: 0
 }

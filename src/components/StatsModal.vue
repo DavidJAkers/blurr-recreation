@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import useGameHistory from '../composables/useGameHistory'
-
-const { last_game, calculateStats} = useGameHistory()
-
-
-
+const { last_game, calculateStats } = useGameHistory()
 </script>
 
 <template>
