@@ -4,10 +4,13 @@ import type { AlbumData } from '@/types/AlbumData';
 import type { GameStep } from '@/types/GameStep';
 import normalizeString from '@/composables/normalizeString'
 
-const props = defineProps<{ selected_album: AlbumData; refreshSettings: Function; hard_mode: boolean }>()
+import useSettings from '@/composables/useSettings';
+
+const props = defineProps<{ selected_album: AlbumData; hard_mode: boolean }>()
 const emit = defineEmits(['addGameHistory'])
 
-const { refreshSettings } = props
+const { refreshSettings } = useSettings()
+
 const selected_album = computed(() => {
   return props.selected_album
 })
@@ -268,5 +271,6 @@ button:hover {
 button:active {
   color: white;
   background-color: black;
-}</style>
+}
+</style>
 

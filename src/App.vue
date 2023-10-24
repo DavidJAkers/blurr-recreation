@@ -7,24 +7,26 @@ import HowtoPlayModal from './components/HowtoPlayModal.vue'
 import StatsModal from './components/StatsModal.vue'
 import SettingsModal from './components/SettingsModal.vue'
 import ToggleSwitch from './components/ToggleSwitch.vue'
-import { genres, type Genre } from './types/Genre'
-import { decades, type Decade } from './types/Decade'
+import { genres } from './types/Genre'
+import { decades } from './types/Decade'
 
 import useDiscogs from './composables/useDiscogs'
 import useGameHistory from './composables/useGameHistory'
+import useSettings from './composables/useSettings'
 
 export default defineComponent({
   name: 'App',
   components: { HeaderBar, GameControl, Modal, HowtoPlayModal, StatsModal, SettingsModal, ToggleSwitch },
   setup() {
-    const { error, selected_album, fetchAlbum } = useDiscogs()
+    const { error, selected_album } = useDiscogs()
     const { addGameHistory } = useGameHistory()
+    const { genre, decade, refreshSettings } = useSettings()
 
     const show_how = ref<boolean>(false)
     const show_stats = ref<boolean>(false)
     const show_settings = ref<boolean>(false)
-    const genre = ref<Genre | undefined>()
-    const decade = ref<Decade | undefined>()
+    //const genre = ref<Genre | undefined>()
+    //const decade = ref<Decade | undefined>()
     const dev_mode = ref<boolean>(false)
     const hard_mode = ref<boolean>(false)
 
@@ -47,21 +49,21 @@ export default defineComponent({
       hard_mode.value = !hard_mode.value
     }
 
-    const getRandomGenre = () => {
-      const genre_index = Math.floor(Math.random() * genres.length)
-      return genres[genre_index]
-    }
-
-    const getRandomDecade = () => {
-      const decade_index = Math.floor(Math.random() * decades.length)
-      return decades[decade_index]
-    }
-
-    const refreshSettings = async (options?: { genre?: Genre; decade?: Decade }) => {
-      decade.value = options?.decade ?? getRandomDecade()
-      genre.value = options?.genre ?? getRandomGenre()
-      await fetchAlbum(genre.value, decade.value)
-    }
+    /*     const getRandomGenre = () => {
+          const genre_index = Math.floor(Math.random() * genres.length)
+          return genres[genre_index]
+        }
+    
+        const getRandomDecade = () => {
+          const decade_index = Math.floor(Math.random() * decades.length)
+          return decades[decade_index]
+        }
+    
+        const refreshSettings = async (options?: { genre?: Genre; decade?: Decade }) => {
+          decade.value = options?.decade ?? getRandomDecade()
+          genre.value = options?.genre ?? getRandomGenre()
+          await fetchAlbum(genre.value, decade.value)
+        } */
 
     onMounted(async () => {
       await refreshSettings()
@@ -95,7 +97,7 @@ export default defineComponent({
 
     <div class="error-message" v-if="error">{{ error.message }}</div>
 
-    <GameControl v-else-if="selected_album !== null" :selected_album="selected_album" :refreshSettings="refreshSettings"
+    <GameControl v-else-if="selected_album !== null" :selected_album="selected_album"
       @addGameHistory="(game) => { addGameHistory(game), toggleShowStats() }" :hard_mode="hard_mode" />
 
   </div>
