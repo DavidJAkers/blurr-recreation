@@ -4,9 +4,10 @@ import type { AlbumData } from '@/types/AlbumData';
 import type { GameStep } from '@/types/GameStep';
 import normalizeString from '@/composables/normalizeString'
 
-const props = defineProps<{selected_album: AlbumData; refreshSettings: Function; addGameHistory: Function; hard_mode: boolean}>()
+const props = defineProps<{selected_album: AlbumData; refreshSettings: Function; hard_mode: boolean}>()
+const emit = defineEmits(['addGameHistory'])
 
-const {refreshSettings, addGameHistory} = props
+const {refreshSettings} = props
 const selected_album = computed(() => {
   return props.selected_album
 })
@@ -50,7 +51,7 @@ const handleGuessEntry = () => {
       normalizeString(artist_guess.value) === normalizeString(selected_album.value.artist)) {
 
           points.value = gameStep.value.step * 2
-        addGameHistory({
+          emit('addGameHistory' , {
           game_won: true,
           game_points: points.value,
           game_album_name: selected_album.value.name,
@@ -61,7 +62,7 @@ const handleGuessEntry = () => {
         })
       }
       else {
-        addGameHistory( {
+        emit('addGameHistory', {
           game_won: false,
           game_points: points.value,
           game_album_name: selected_album.value.name,
@@ -76,7 +77,7 @@ const handleGuessEntry = () => {
       artist_guess.value = ''
 
     } else if (gameStep.value.step === 1){
-      addGameHistory( {
+      emit('addGameHistory', {
           game_won: false,
           game_points: points.value,
           game_album_name: selected_album.value.name,
@@ -105,7 +106,7 @@ const handleGuessEntry = () => {
     }
   }
   if (album_correct.value === true && artist_correct.value === true) {
-    addGameHistory({
+    emit('addGameHistory',{
       game_won: true,
       game_points: points.value,
       game_album_name: selected_album.value.name,
@@ -118,7 +119,7 @@ const handleGuessEntry = () => {
     newGame()
   }
   else if (gameStep.value.step === 1) {
-    addGameHistory({
+    emit('addGameHistory', {
       game_won: false,
       game_points: points.value,
       game_album_name: selected_album.value.name,
