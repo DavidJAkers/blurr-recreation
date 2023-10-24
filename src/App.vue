@@ -20,15 +20,12 @@ export default defineComponent({
   setup() {
     const { error, selected_album } = useDiscogs()
     const { addGameHistory } = useGameHistory()
-    const { genre, decade, refreshSettings } = useSettings()
+    const { genre, decade, refreshSettings, dev_mode, hard_mode, toggleDevMode, toggleHardMode } = useSettings()
 
     const show_how = ref<boolean>(false)
     const show_stats = ref<boolean>(false)
     const show_settings = ref<boolean>(false)
-    //const genre = ref<Genre | undefined>()
-    //const decade = ref<Decade | undefined>()
-    const dev_mode = ref<boolean>(false)
-    const hard_mode = ref<boolean>(false)
+
 
     const toggleShowHow = () => {
       show_how.value = !show_how.value
@@ -40,30 +37,6 @@ export default defineComponent({
     const toggleShowSettings = () => {
       show_settings.value = !show_settings.value
     }
-
-    const toggleDevMode = () => {
-      dev_mode.value = !dev_mode.value
-    }
-
-    const toggleHardMode = () => {
-      hard_mode.value = !hard_mode.value
-    }
-
-    /*     const getRandomGenre = () => {
-          const genre_index = Math.floor(Math.random() * genres.length)
-          return genres[genre_index]
-        }
-    
-        const getRandomDecade = () => {
-          const decade_index = Math.floor(Math.random() * decades.length)
-          return decades[decade_index]
-        }
-    
-        const refreshSettings = async (options?: { genre?: Genre; decade?: Decade }) => {
-          decade.value = options?.decade ?? getRandomDecade()
-          genre.value = options?.genre ?? getRandomGenre()
-          await fetchAlbum(genre.value, decade.value)
-        } */
 
     onMounted(async () => {
       await refreshSettings()
@@ -98,14 +71,13 @@ export default defineComponent({
     <div class="error-message" v-if="error">{{ error.message }}</div>
 
     <GameControl v-else-if="selected_album !== null" :selected_album="selected_album"
-      @addGameHistory="(game) => { addGameHistory(game), toggleShowStats() }" :hard_mode="hard_mode" />
+      @addGameHistory="(game) => { addGameHistory(game), toggleShowStats() }" />
 
   </div>
   <div v-if="dev_mode" class="dev-answers">
     <p v-if="selected_album">Album - {{ selected_album.name }}</p>
     <p v-if="selected_album">Artist - {{ selected_album.artist }}</p>
   </div>
-
 
   <div v-if="show_how">
     <Modal @closemodal="toggleShowHow">

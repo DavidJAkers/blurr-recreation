@@ -6,17 +6,15 @@ import normalizeString from '@/composables/normalizeString'
 
 import useSettings from '@/composables/useSettings';
 
-const props = defineProps<{ selected_album: AlbumData; hard_mode: boolean }>()
+const props = defineProps<{ selected_album: AlbumData; }>()
 const emit = defineEmits(['addGameHistory'])
 
-const { refreshSettings } = useSettings()
+const { refreshSettings, hard_mode } = useSettings()
 
 const selected_album = computed(() => {
   return props.selected_album
 })
-const hard_mode = computed(() => {
-  return props.hard_mode
-})
+
 const game_init = { step: 5, blurlevel: "20px" }
 const gameStep = ref<GameStep>(game_init)
 const points = ref<number>(0)
