@@ -8,10 +8,10 @@ import getYear from './getYear'
 
 const FETCH_COUNT = 9
 
-const selected_album = ref<AlbumData | null>(null)
-const error = ref<Error | null>(null)
-
 export default function useDiscogs() {
+  const selected_album = ref<AlbumData | null>(null)
+  const error = ref<Error | null>(null)
+
   const get_fetch_url = (genre: Genre, year: number) => {
     const url = new URL('https://api.discogs.com/database/search')
     url.searchParams.set('type', 'master')
