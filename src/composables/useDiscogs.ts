@@ -1,10 +1,17 @@
 import { readonly, ref } from 'vue'
-import { type ResponseData } from '@/types/ResponseData'
-import { type Genre } from '@/types/Genre'
 import { type Decade } from '@/types/Decade'
-import type { AlbumData } from '@/types/AlbumData'
+import { type Genre } from '@/types/Genre'
+import { type ResponseData } from '@/types/ResponseData'
 
-import getYear from './getYear'
+import getYear from '../utils/getYear'
+
+type AlbumData = {
+  name: string
+  artist: string
+  year: number
+  genre: string
+  image: string
+}
 
 const FETCH_COUNT = 9
 

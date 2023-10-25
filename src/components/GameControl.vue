@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import type { GameStep } from '@/types/GameStep';
-import normalizeString from '@/composables/normalizeString'
+import normalizeString from '@/utils/normalizeString'
 
-import useSettings from '@/composables/useSettings';
 import useDiscogs from '@/composables/useDiscogs';
+import useSettings from '@/composables/useSettings';
 
 import { IonItem, IonSpinner } from '@ionic/vue'
 
@@ -13,8 +13,9 @@ const emit = defineEmits(['addGameHistory'])
 const { selected_album } = useDiscogs()
 const { refreshSettings, hard_mode } = useSettings()
 
-const game_init = { step: 5, blurlevel: "20px" }
-const gameStep = ref<GameStep>(game_init)
+const GAME_INIT = { step: 5, blurlevel: "20px" }
+
+const gameStep = ref<GameStep>(GAME_INIT)
 const points = ref<number>(0)
 const album_guess = ref<string>('')
 const artist_guess = ref<string>('')
@@ -34,7 +35,7 @@ const nextStep = () => {
 
 //Sets state for new game
 const newGame = () => {
-  gameStep.value = game_init
+  gameStep.value = GAME_INIT
   refreshSettings()
   points.value = 0
   album_correct.value = false
@@ -155,15 +156,19 @@ watch(hard_mode, () => {
       <div v-if="!hard_mode">Guesses remaining: {{ gameStep.step }}</div>
       <div v-else>Guesses remaining: 1</div>
     </div>
+
     <div class="image-container">
       <img class="main-image" :src="selected_album.image" alt="Blurred" width="240" :style="blur_styling" />
       <!-- Above to be changed once data is fetched -->
     </div>
+
     <div class="genre-year">
       <div class="genre">Genre: {{ selected_album.genre }}</div>
       <div class="year">Year: {{ selected_album.year }}</div>
     </div>
+
     <div class="points">Points: {{ points }}</div>
+
     <div class="entry-forms">
       <form autocomplete="off" v-on:submit.prevent>
         Album Name:
@@ -176,11 +181,13 @@ watch(hard_mode, () => {
           @keyup.enter="handleGuessEntry">
       </form>
     </div>
+
     <div class="game-buttons">
       <div>
         <button @click="handleGuessEntry"
           :style="hard_mode === true && (album_guess.length || artist_guess.length) ? 'background: red' : ''">Guess</button>
       </div>
+
       <div>
         <button @click="newGame">New Game</button>
       </div>
@@ -272,6 +279,7 @@ button {
 button:hover {
   color: black;
   background-color: white;
+  cursor: pointer;
 }
 
 button:active {
@@ -282,7 +290,8 @@ button:active {
 ion-spinner {
   width: 100px;
   height: 100px;
-  margin-top: 150px;
+  margin-top: 120px;
 }
 </style>
 
+@/utils/GameStep@/utils/normalizeString

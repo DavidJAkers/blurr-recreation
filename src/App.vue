@@ -1,55 +1,44 @@
-<script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue'
-import HeaderBar from './components/HeaderBar.vue'
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
 import GameControl from './components/GameControl.vue'
-import Modal from './components/ModalFrame.vue'
+import HeaderBar from './components/HeaderBar.vue'
 import HowtoPlayModal from './components/HowtoPlayModal.vue'
-import StatsModal from './components/StatsModal.vue'
+import Modal from './components/ModalFrame.vue'
 import SettingsModal from './components/SettingsModal.vue'
+import StatsModal from './components/StatsModal.vue'
 import ToggleSwitch from './components/ToggleSwitch.vue'
-import { genres } from './types/Genre'
 import { decades } from './types/Decade'
+import { genres } from './types/Genre'
 
 import useDiscogs from './composables/useDiscogs'
 import useGameHistory from './composables/useGameHistory'
 import useSettings from './composables/useSettings'
 
-export default defineComponent({
-  name: 'App',
-  components: { HeaderBar, GameControl, Modal, HowtoPlayModal, StatsModal, SettingsModal, ToggleSwitch },
-  setup() {
-    const { error, selected_album } = useDiscogs()
-    const { addGameHistory } = useGameHistory()
-    const { genre, decade, refreshSettings, dev_mode, hard_mode, toggleDevMode, toggleHardMode } = useSettings()
 
-    const show_how = ref<boolean>(false)
-    const show_stats = ref<boolean>(false)
-    const show_settings = ref<boolean>(false)
+const { error, selected_album } = useDiscogs()
+const { addGameHistory } = useGameHistory()
+const { genre, decade, refreshSettings, dev_mode, hard_mode, toggleDevMode, toggleHardMode } = useSettings()
+
+const show_how = ref<boolean>(false)
+const show_stats = ref<boolean>(false)
+const show_settings = ref<boolean>(false)
 
 
-    const toggleShowHow = () => {
-      show_how.value = !show_how.value
-      console.log('clicked')
-    }
-    const toggleShowStats = () => {
-      show_stats.value = !show_stats.value
-    }
-    const toggleShowSettings = () => {
-      show_settings.value = !show_settings.value
-    }
+const toggleShowHow = () => {
+  show_how.value = !show_how.value
+  console.log('clicked')
+}
+const toggleShowStats = () => {
+  show_stats.value = !show_stats.value
+}
+const toggleShowSettings = () => {
+  show_settings.value = !show_settings.value
+}
 
-    onMounted(async () => {
-      await refreshSettings()
-    })
-
-    return {
-      genre, decade, genres, decades, selected_album,
-      refreshSettings, addGameHistory, error, show_how, show_stats,
-      show_settings, toggleShowHow, toggleShowStats, toggleShowSettings, dev_mode,
-      hard_mode, toggleDevMode, toggleHardMode
-    }
-  }
+onMounted(async () => {
+  await refreshSettings()
 })
+
 </script>
 <template>
   <div class="main">
@@ -59,6 +48,7 @@ export default defineComponent({
       <p>Genre</p>
       <p>Decade</p>
     </div>
+
     <div class="setting-select">
       <select v-model="genre" @change="refreshSettings({ genre })">
         <option v-for="(genre, index) in genres" :value="genre" :key="index">{{ genre }}</option>
@@ -68,10 +58,19 @@ export default defineComponent({
       </select>
     </div>
 
-    <div class="error-message" v-if="error">{{ error.message }}</div>
+    <GameControl @addGameHistory="(game) => { addGameHistory(game), toggleShowStats() }" />
 
-    <GameControl v-else-if="selected_album !== null"
-      @addGameHistory="(game) => { addGameHistory(game), toggleShowStats() }" :hard_mode="hard_mode" />
+    <div class="error-message" v-if="error">
+      <div v-if="dev_mode">
+        {{ error.message }}
+      </div>
+      <div v-else>
+        Error loading occured
+      </div>
+      <button @click="refreshSettings()">
+        Try Again
+      </button>
+    </div>
 
   </div>
   <div v-if="dev_mode" class="dev-answers">
@@ -115,6 +114,7 @@ select {
   font-size: 16px;
   width: 150px;
   text-align-last: center;
+  cursor: pointer;
 }
 
 .setting-titles {
@@ -140,13 +140,39 @@ select {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
 
-  .error-message {
-    color: crimson;
-    font-weight: 600;
-    padding-top: 50px;
-    font-size: 30px
-  }
+.error-message {
+  color: crimson;
+  font-weight: 600;
+  padding-top: 50px;
+  font-size: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.error-message button {
+  color: white;
+  background-color: rgb(73, 73, 73);
+  border-radius: 6px;
+  border: 2px solid white;
+  padding: 4px 14px;
+  font-size: 16px;
+  width: 150px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.error-message button:hover {
+  color: black;
+  background-color: white;
+  cursor: pointer;
+}
+
+.error-message button:active {
+  color: white;
+  background-color: black;
 }
 
 .dev-answers {
@@ -156,6 +182,6 @@ select {
 }
 
 .dev-answers p {
-  margin: 0
+  margin: 0;
 }
 </style>

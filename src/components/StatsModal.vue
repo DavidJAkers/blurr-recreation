@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import useGameHistory from '../composables/useGameHistory'
+
 const { last_game, calculateStats } = useGameHistory()
+
 </script>
 
 <template>
@@ -10,12 +12,15 @@ const { last_game, calculateStats } = useGameHistory()
       <h3 style="color: crimson" v-if="!last_game.game_won">You Lost - {{ last_game.game_points }} points </h3>
       <h3 style="color: green" v-else>You Won - {{ last_game.game_points }} points</h3>
     </div>
+
     <div class="stats-image">
       <img :src="last_game.game_image" alt="Album Image" width="150" height="150">
     </div>
+
     <div class="stats-album-details">
       {{ last_game.game_album_name }} - {{ last_game.game_artist_name }}
     </div>
+
     <h2>Game History</h2>
     <div class="game-stats">
       <ul>
@@ -38,6 +43,7 @@ const { last_game, calculateStats } = useGameHistory()
       </ul>
     </div>
   </div>
+
   <div v-else class="no-history-message">
     No game history recorded. Try playing a game!
   </div>

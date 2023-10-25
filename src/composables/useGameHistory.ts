@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+
 type GameHistory = {
   game_won: boolean
   game_points: number

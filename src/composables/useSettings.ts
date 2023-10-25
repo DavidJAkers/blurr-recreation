@@ -1,6 +1,6 @@
 import { ref } from 'vue'
-import { genres, type Genre } from '../types/Genre'
 import { decades, type Decade } from '../types/Decade'
+import { genres, type Genre } from '../types/Genre'
 
 import useDiscogs from './useDiscogs'
 
