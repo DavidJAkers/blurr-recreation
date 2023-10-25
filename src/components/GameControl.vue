@@ -1,19 +1,17 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import type { AlbumData } from '@/types/AlbumData';
 import type { GameStep } from '@/types/GameStep';
 import normalizeString from '@/composables/normalizeString'
 
 import useSettings from '@/composables/useSettings';
+import useDiscogs from '@/composables/useDiscogs';
 
-const props = defineProps<{ selected_album: AlbumData; }>()
+import { IonItem, IonSpinner } from '@ionic/vue'
+
 const emit = defineEmits(['addGameHistory'])
 
+const { selected_album } = useDiscogs()
 const { refreshSettings, hard_mode } = useSettings()
-
-const selected_album = computed(() => {
-  return props.selected_album
-})
 
 const game_init = { step: 5, blurlevel: "20px" }
 const gameStep = ref<GameStep>(game_init)
@@ -45,6 +43,8 @@ const newGame = () => {
 
 // Handles state events based on state, including hard mode and non-hard mode handling
 const handleGuessEntry = () => {
+  if (!selected_album.value) return
+
   //Handle hard-mode
   if (hard_mode.value === true) {
     if (album_guess.value.length || artist_guess.value.length) {
@@ -149,40 +149,48 @@ watch(hard_mode, () => {
 
 </script>
 <template>
-  <div class="game-info">
-    <div>Blur level: {{ gameStep.step * 20 }}%</div>
-    <div v-if="!hard_mode">Guesses remaining: {{ gameStep.step }}</div>
-    <div v-else>Guesses remaining: 1</div>
-  </div>
-  <div class="image-container">
-    <img class="main-image" :src="selected_album.image" alt="Blurred" width="240" :style="blur_styling" />
-    <!-- Above to be changed once data is fetched -->
-  </div>
-  <div class="genre-year">
-    <div class="genre">Genre: {{ selected_album.genre }}</div>
-    <div class="year">Year: {{ selected_album.year }}</div>
-  </div>
-  <div class="points">Points: {{ points }}</div>
-  <div class="entry-forms">
-    <form autocomplete="off" v-on:submit.prevent>
-      Album Name:
-      <input type="text" name="album_name" v-model="album_guess" :disabled="album_correct" @keyup.enter="handleGuessEntry"
-        :placeholder="album_correct ? selected_album.name : ''" autofocus>
-    </form>
-    <form autocomplete="off" v-on:submit.prevent>
-      Artist Name:
-      <input type="text" name="artist_name" v-model="artist_guess" :disabled="artist_correct"
-        @keyup.enter="handleGuessEntry">
-    </form>
-  </div>
-  <div class="game-buttons">
-    <div>
-      <button @click="handleGuessEntry"
-        :style="hard_mode === true && (album_guess.length || artist_guess.length) ? 'background: red' : ''">Guess</button>
+  <div v-if="selected_album">
+    <div class="game-info">
+      <div>Blur level: {{ gameStep.step * 20 }}%</div>
+      <div v-if="!hard_mode">Guesses remaining: {{ gameStep.step }}</div>
+      <div v-else>Guesses remaining: 1</div>
     </div>
-    <div>
-      <button @click="newGame">New Game</button>
+    <div class="image-container">
+      <img class="main-image" :src="selected_album.image" alt="Blurred" width="240" :style="blur_styling" />
+      <!-- Above to be changed once data is fetched -->
     </div>
+    <div class="genre-year">
+      <div class="genre">Genre: {{ selected_album.genre }}</div>
+      <div class="year">Year: {{ selected_album.year }}</div>
+    </div>
+    <div class="points">Points: {{ points }}</div>
+    <div class="entry-forms">
+      <form autocomplete="off" v-on:submit.prevent>
+        Album Name:
+        <input type="text" name="album_name" v-model="album_guess" :disabled="album_correct"
+          @keyup.enter="handleGuessEntry" :placeholder="album_correct ? selected_album.name : ''" autofocus>
+      </form>
+      <form autocomplete="off" v-on:submit.prevent>
+        Artist Name:
+        <input type="text" name="artist_name" v-model="artist_guess" :disabled="artist_correct"
+          @keyup.enter="handleGuessEntry">
+      </form>
+    </div>
+    <div class="game-buttons">
+      <div>
+        <button @click="handleGuessEntry"
+          :style="hard_mode === true && (album_guess.length || artist_guess.length) ? 'background: red' : ''">Guess</button>
+      </div>
+      <div>
+        <button @click="newGame">New Game</button>
+      </div>
+    </div>
+  </div>
+  <!-- Show Spinner while album not selected -->
+  <div v-else>
+    <ion-item>
+      <ion-spinner name="circles"></ion-spinner>
+    </ion-item>
   </div>
 </template>
 
@@ -269,6 +277,12 @@ button:hover {
 button:active {
   color: white;
   background-color: black;
+}
+
+ion-spinner {
+  width: 100px;
+  height: 100px;
+  margin-top: 150px;
 }
 </style>
 

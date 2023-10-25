@@ -70,8 +70,8 @@ export default defineComponent({
 
     <div class="error-message" v-if="error">{{ error.message }}</div>
 
-    <GameControl v-else-if="selected_album !== null" :selected_album="selected_album"
-      @addGameHistory="(game) => { addGameHistory(game), toggleShowStats() }" />
+    <GameControl v-else-if="selected_album !== null"
+      @addGameHistory="(game) => { addGameHistory(game), toggleShowStats() }" :hard_mode="hard_mode" />
 
   </div>
   <div v-if="dev_mode" class="dev-answers">
