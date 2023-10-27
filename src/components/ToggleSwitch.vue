@@ -1,7 +1,8 @@
 <script setup lang="ts">
 defineProps<{ value: boolean }>()
 const emit = defineEmits(['updateValue'])
-const updateValue = () => {
+
+function updateValue() {
   emit('updateValue')
 }
 

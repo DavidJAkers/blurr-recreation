@@ -4,7 +4,7 @@ import ToggleSwitch from './ToggleSwitch.vue';
 
 const emit = defineEmits(['toggleDevMode', 'toggleHardMode'])
 
-const { dev_mode, hard_mode } = useSettings()
+const { devMode, hardMode } = useSettings()
 
 function toggleDevMode() {
   emit('toggleDevMode')
@@ -23,7 +23,7 @@ function toggleHardMode() {
         <p>Developer Mode</p>
         <p class="settings-subtext">Shows answers automatically</p>
       </div>
-      <ToggleSwitch :value="dev_mode" @updateValue="toggleDevMode" />
+      <ToggleSwitch :value="devMode" @updateValue="toggleDevMode" />
     </div>
 
     <div class="settings-row">
@@ -31,7 +31,7 @@ function toggleHardMode() {
         <p>Hard Mode</p>
         <p class="settings-subtext">Limits to one Guess</p>
       </div>
-      <ToggleSwitch :value="hard_mode" @updateValue="toggleHardMode" />
+      <ToggleSwitch :value="hardMode" @updateValue="toggleHardMode" />
     </div>
   </div>
 </template>

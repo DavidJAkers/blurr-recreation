@@ -6,32 +6,32 @@ import useDiscogs from './useDiscogs'
 
 const genre = ref<Genre | undefined>()
 const decade = ref<Decade | undefined>()
-const dev_mode = ref<boolean>(false)
-const hard_mode = ref<boolean>(false)
+const devMode = ref<boolean>(false)
+const hardMode = ref<boolean>(false)
 
 export default function useSettings() {
   const { fetchAlbum } = useDiscogs()
 
-  const toggleDevMode = () => {
-    dev_mode.value = !dev_mode.value
+  function toggleDevMode() {
+    devMode.value = !devMode.value
   }
 
-  const toggleHardMode = () => {
-    hard_mode.value = !hard_mode.value
+  function toggleHardMode() {
+    hardMode.value = !hardMode.value
   }
 
-  const getRandomGenre = () => {
-    const genre_index = Math.floor(Math.random() * genres.length)
-    return genres[genre_index]
+  function getRandomGenre() {
+    const genreIndex = Math.floor(Math.random() * genres.length)
+    return genres[genreIndex]
   }
 
-  const getRandomDecade = () => {
-    const decade_index = Math.floor(Math.random() * decades.length)
-    return decades[decade_index]
+  function getRandomDecade() {
+    const decadeIndex = Math.floor(Math.random() * decades.length)
+    return decades[decadeIndex]
   }
 
   //options optional, if genre provided, set to genre, if decade provided, set to decade
-  const refreshSettings = async (options?: { genre?: Genre; decade?: Decade }) => {
+  async function refreshSettings(options?: { genre?: Genre; decade?: Decade }) {
     decade.value = options?.decade ?? getRandomDecade()
     genre.value = options?.genre ?? getRandomGenre()
     await fetchAlbum(genre.value, decade.value)
@@ -40,8 +40,8 @@ export default function useSettings() {
   return {
     genre,
     decade,
-    dev_mode,
-    hard_mode,
+    devMode,
+    hardMode,
 
     toggleDevMode,
     toggleHardMode,

@@ -1,21 +1,19 @@
-import { type Decade} from '@/types/Decade'
+import { type Decade } from '@/types/Decade'
 
-const getYear = (decade: Decade) => {
+export default function getYear(decade: Decade) {
   const parsed = parseFloat(decade)
-  const current_year = new Date().getFullYear()
-  const decade_nums: number[] = []
-  let year_index = null
+  const currentYear = new Date().getFullYear()
+  const decadeNums: number[] = []
+  let yearIndex = null
   for (let i = parsed; i < parsed + 10; i++) {
-    decade_nums.push(i)
+    decadeNums.push(i)
   }
   if (parsed !== 2020) {
-    year_index = Math.floor(Math.random() * 10)
+    yearIndex = Math.floor(Math.random() * 10)
   } else {
-    year_index = Math.floor(Math.random() * ((current_year % 10) +1))
+    yearIndex = Math.floor(Math.random() * ((currentYear % 10) + 1))
   }
-  const year = decade_nums[year_index]
+  const year = decadeNums[yearIndex]
 
   return year
 }
-
-export default getYear

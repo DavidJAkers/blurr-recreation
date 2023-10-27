@@ -14,24 +14,24 @@ import useGameHistory from './composables/useGameHistory'
 import useSettings from './composables/useSettings'
 
 
-const { error, selected_album } = useDiscogs()
+const { error, selectedAlbum } = useDiscogs()
 const { addGameHistory } = useGameHistory()
-const { genre, decade, refreshSettings, dev_mode, toggleDevMode, toggleHardMode } = useSettings()
+const { genre, decade, refreshSettings, devMode, toggleDevMode, toggleHardMode } = useSettings()
 
-const show_how = ref<boolean>(false)
-const show_stats = ref<boolean>(false)
-const show_settings = ref<boolean>(false)
+const showHow = ref<boolean>(false)
+const showStats = ref<boolean>(false)
+const showSettings = ref<boolean>(false)
 
 
-const toggleShowHow = () => {
-  show_how.value = !show_how.value
+function toggleShowHow() {
+  showHow.value = !showHow.value
   console.log('clicked')
 }
-const toggleShowStats = () => {
-  show_stats.value = !show_stats.value
+function toggleShowStats() {
+  showStats.value = !showStats.value
 }
-const toggleShowSettings = () => {
-  show_settings.value = !show_settings.value
+function toggleShowSettings() {
+  showSettings.value = !showSettings.value
 }
 
 onMounted(async () => {
@@ -60,7 +60,7 @@ onMounted(async () => {
     <GameControl @addGameHistory="(game) => { addGameHistory(game), toggleShowStats() }" />
 
     <div class="error-message" v-if="error">
-      <div v-if="dev_mode">
+      <div v-if="devMode">
         {{ error.message }}
       </div>
       <div v-else>
@@ -72,24 +72,24 @@ onMounted(async () => {
     </div>
 
   </div>
-  <div v-if="dev_mode" class="dev-answers">
-    <p v-if="selected_album">Album - {{ selected_album.name }}</p>
-    <p v-if="selected_album">Artist - {{ selected_album.artist }}</p>
+  <div v-if="devMode" class="dev-answers">
+    <p v-if="selectedAlbum">Album - {{ selectedAlbum.name }}</p>
+    <p v-if="selectedAlbum">Artist - {{ selectedAlbum.artist }}</p>
   </div>
 
-  <div v-if="show_how">
+  <div v-if="showHow">
     <Modal @closemodal="toggleShowHow">
       <HowtoPlayModal />
     </Modal>
   </div>
 
-  <div v-if="show_stats">
+  <div v-if="showStats">
     <Modal @closemodal="toggleShowStats">
       <StatsModal />
     </Modal>
   </div>
 
-  <div v-if="show_settings">
+  <div v-if="showSettings">
     <Modal @closemodal="toggleShowSettings">
       <SettingsModal @toggleDevMode="toggleDevMode" @toggleHardMode="toggleHardMode" />
     </Modal>
