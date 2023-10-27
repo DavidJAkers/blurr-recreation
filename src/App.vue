@@ -25,7 +25,6 @@ const showSettings = ref<boolean>(false)
 
 function toggleShowHow() {
   showHow.value = !showHow.value
-  console.log('clicked')
 }
 function toggleShowStats() {
   showStats.value = !showStats.value
