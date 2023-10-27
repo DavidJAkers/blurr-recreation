@@ -294,4 +294,3 @@ ion-spinner {
 }
 </style>
 
-@/utils/GameStep@/utils/normalizeString
