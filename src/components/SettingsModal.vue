@@ -1,5 +1,18 @@
 <script setup lang="ts">
+import useSettings from '@/composables/useSettings';
+import ToggleSwitch from './ToggleSwitch.vue';
 
+const emit = defineEmits(['toggleDevMode', 'toggleHardMode'])
+
+const { dev_mode, hard_mode } = useSettings()
+
+function toggleDevMode() {
+  emit('toggleDevMode')
+}
+
+function toggleHardMode() {
+  emit('toggleHardMode')
+}
 </script>
 
 <template>
@@ -10,7 +23,7 @@
         <p>Developer Mode</p>
         <p class="settings-subtext">Shows answers automatically</p>
       </div>
-      <slot name="devSwitch" />
+      <ToggleSwitch :value="dev_mode" @updateValue="toggleDevMode" />
     </div>
 
     <div class="settings-row">
@@ -18,7 +31,7 @@
         <p>Hard Mode</p>
         <p class="settings-subtext">Limits to one Guess</p>
       </div>
-      <slot name="modeSwitch" />
+      <ToggleSwitch :value="hard_mode" @updateValue="toggleHardMode" />
     </div>
   </div>
 </template>

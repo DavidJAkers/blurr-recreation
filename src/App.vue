@@ -6,7 +6,6 @@ import HowtoPlayModal from './components/HowtoPlayModal.vue'
 import Modal from './components/ModalFrame.vue'
 import SettingsModal from './components/SettingsModal.vue'
 import StatsModal from './components/StatsModal.vue'
-import ToggleSwitch from './components/ToggleSwitch.vue'
 import { decades } from './types/Decade'
 import { genres } from './types/Genre'
 
@@ -17,7 +16,7 @@ import useSettings from './composables/useSettings'
 
 const { error, selected_album } = useDiscogs()
 const { addGameHistory } = useGameHistory()
-const { genre, decade, refreshSettings, dev_mode, hard_mode, toggleDevMode, toggleHardMode } = useSettings()
+const { genre, decade, refreshSettings, dev_mode, toggleDevMode, toggleHardMode } = useSettings()
 
 const show_how = ref<boolean>(false)
 const show_stats = ref<boolean>(false)
@@ -92,14 +91,7 @@ onMounted(async () => {
 
   <div v-if="show_settings">
     <Modal @closemodal="toggleShowSettings">
-      <SettingsModal>
-        <template #devSwitch>
-          <ToggleSwitch :value="dev_mode" @updateValue="toggleDevMode" />
-        </template>
-        <template #modeSwitch>
-          <ToggleSwitch :value="hard_mode" @updateValue="toggleHardMode" />
-        </template>
-      </SettingsModal>
+      <SettingsModal @toggleDevMode="toggleDevMode" @toggleHardMode="toggleHardMode" />
     </Modal>
   </div>
 </template>
