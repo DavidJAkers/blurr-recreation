@@ -2,17 +2,8 @@
 import useSettings from '@/composables/useSettings';
 import ToggleSwitch from './ToggleSwitch.vue';
 
-const emit = defineEmits(['toggleDevMode', 'toggleHardMode'])
+const { devMode, hardMode, toggleDevMode, toggleHardMode } = useSettings()
 
-const { devMode, hardMode } = useSettings()
-
-function toggleDevMode() {
-  emit('toggleDevMode')
-}
-
-function toggleHardMode() {
-  emit('toggleHardMode')
-}
 </script>
 
 <template>

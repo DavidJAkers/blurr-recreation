@@ -16,7 +16,7 @@ import useSettings from './composables/useSettings'
 
 const { error, selectedAlbum } = useDiscogs()
 const { addGameHistory } = useGameHistory()
-const { genre, decade, refreshSettings, devMode, toggleDevMode, toggleHardMode } = useSettings()
+const { genre, decade, refreshSettings, devMode } = useSettings()
 
 const showHow = ref<boolean>(false)
 const showStats = ref<boolean>(false)
@@ -90,7 +90,7 @@ onMounted(async () => {
 
   <div v-if="showSettings">
     <Modal @closemodal="toggleShowSettings">
-      <SettingsModal @toggleDevMode="toggleDevMode" @toggleHardMode="toggleHardMode" />
+      <SettingsModal />
     </Modal>
   </div>
 </template>
