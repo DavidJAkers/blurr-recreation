@@ -1,6 +1,6 @@
 type GameStep = {
-  step: number,
-  blurlevel: string
+  step: number
+  blurLevel: string
 }
 
-export {type GameStep}
+export { type GameStep }

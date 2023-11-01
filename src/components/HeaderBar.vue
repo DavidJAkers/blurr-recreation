@@ -9,7 +9,6 @@ defineProps<{ toggleShowHow: Function; toggleShowStats: Function; toggleShowSett
     <div class="header-left">
     </div>
     <h1>Blurr</h1>
-
     <!-- Button icon svg's sourced from https://www.nytimes.com/games/wordle/index.html-->
     <menu class="header-right">
       <button class="how-to-play" @click="() => toggleShowHow()">
@@ -77,4 +76,17 @@ h1 {
   background: none;
   border: none;
   cursor: pointer;
-}</style>
+}
+
+@media screen and (max-width: 600px) {
+  .header-left {
+    width: 0;
+    padding-left: 15px;
+  }
+
+  .header-right {
+    justify-content: end;
+    padding-right: 15px;
+  }
+}
+</style>

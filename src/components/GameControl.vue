@@ -1,183 +1,203 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import type { AlbumData } from '@/types/AlbumData';
 import type { GameStep } from '@/types/GameStep';
-import normalizeString from '@/composables/normalizeString'
+import normalizeString from '@/utils/normalizeString'
 
-const props = defineProps<{selected_album: AlbumData; refreshSettings: Function; addGameHistory: Function; hard_mode: boolean}>()
+import useDiscogs from '@/composables/useDiscogs';
+import useSettings from '@/composables/useSettings';
 
-const {refreshSettings, addGameHistory} = props
-const selected_album = computed(() => {
-  return props.selected_album
-})
-const hard_mode = computed(() => {
-  return props.hard_mode
-})
-const game_init = { step: 5, blurlevel: "20px"}
-const gameStep = ref<GameStep>(game_init)
+import { IonItem, IonSpinner } from '@ionic/vue'
+
+const emit = defineEmits(['addGameHistory'])
+
+const { selectedAlbum } = useDiscogs()
+const { refreshSettings, hardMode } = useSettings()
+
+const GAME_INIT = { step: 5, blurLevel: "20px" }
+
+const gameStep = ref<GameStep>(GAME_INIT)
 const points = ref<number>(0)
-const album_guess = ref<string>('')
-const artist_guess = ref<string>('')
-const album_correct = ref<boolean>(false)
-const artist_correct = ref<boolean>(false)
+const albumGuess = ref<string>('')
+const artistGuess = ref<string>('')
+const albumCorrect = ref<boolean>(false)
+const artistCorrect = ref<boolean>(false)
 
-const blur_styling = computed(() => {
-  return "filter: blur(" + gameStep.value.blurlevel + ")"
+const blurStyling = computed(() => {
+  return "filter: blur(" + gameStep.value.blurLevel + ")"
 })
 
 //Assigns gameStep state to next step values
-const nextStep = () => {
+function nextStep() {
   if (gameStep.value.step > 0) {
-    gameStep.value = {step: gameStep.value.step - 1, blurlevel: `${(gameStep.value.step - 1) * 4}px`}
+    gameStep.value = { step: gameStep.value.step - 1, blurLevel: `${(gameStep.value.step - 1) * 4}px` }
   }
 }
 
 //Sets state for new game
-const newGame = () => {
-  gameStep.value = game_init
+function newGame() {
+  gameStep.value = GAME_INIT
   refreshSettings()
   points.value = 0
-  album_correct.value = false
-  artist_correct.value = false
+  albumCorrect.value = false
+  artistCorrect.value = false
 }
 
 // Handles state events based on state, including hard mode and non-hard mode handling
-const handleGuessEntry = () => {
-  //Handle hard-mode
-  if (hard_mode.value === true) {
-    if (album_guess.value.length || artist_guess.value.length) {
-      if (normalizeString(album_guess.value) === normalizeString(selected_album.value.name) &&
-      normalizeString(artist_guess.value) === normalizeString(selected_album.value.artist)) {
+function handleGuessEntry() {
+  if (!selectedAlbum.value) return
 
-          points.value = gameStep.value.step * 2
-        addGameHistory({
-          game_won: true,
-          game_points: points.value,
-          game_album_name: selected_album.value.name,
-          game_artist_name: selected_album.value.artist,
-          game_blur_level: `${gameStep.value.step * 20}%`,
-          game_type: 'hard',
-          game_image: selected_album.value.image
+  //Handle hard-mode
+  if (hardMode.value) {
+    if (albumGuess.value.length || artistGuess.value.length) {
+      if (normalizeString(albumGuess.value) === normalizeString(selectedAlbum.value.name) &&
+        normalizeString(artistGuess.value) === normalizeString(selectedAlbum.value.artist)) {
+
+        points.value = gameStep.value.step * 2
+        emit('addGameHistory', {
+          gameWon: true,
+          gamePoints: points.value,
+          gameAlbumName: selectedAlbum.value.name,
+          gameArtistName: selectedAlbum.value.artist,
+          gameBlurLevel: `${gameStep.value.step * 20}%`,
+          gameType: 'hard',
+          gameImage: selectedAlbum.value.image
         })
       }
       else {
-        addGameHistory( {
-          game_won: false,
-          game_points: points.value,
-          game_album_name: selected_album.value.name,
-          game_artist_name: selected_album.value.artist,
-          game_blur_level: `${gameStep.value.step * 20}%`,
-          game_type: 'hard',
-          game_image: selected_album.value.image
+        emit('addGameHistory', {
+          gameWon: false,
+          gamePoints: points.value,
+          gameAlbumName: selectedAlbum.value.name,
+          gameArtistName: selectedAlbum.value.artist,
+          gameBlurLevel: `${gameStep.value.step * 20}%`,
+          gameType: 'hard',
+          gameImage: selectedAlbum.value.image
         })
       }
       newGame()
-      album_guess.value = ''
-      artist_guess.value = ''
+      albumGuess.value = ''
+      artistGuess.value = ''
 
-    } else if (gameStep.value.step === 1){
-      addGameHistory( {
-          game_won: false,
-          game_points: points.value,
-          game_album_name: selected_album.value.name,
-          game_artist_name: selected_album.value.artist,
-          game_blur_level: `${gameStep.value.step * 20}%`,
-          game_type: 'hard',
-          game_image: selected_album.value.image
-        })
-        newGame()
+    } else if (gameStep.value.step === 1) {
+      emit('addGameHistory', {
+        gameWon: false,
+        gamePoints: points.value,
+        gameAlbumName: selectedAlbum.value.name,
+        gameArtistName: selectedAlbum.value.artist,
+        gameBlurLevel: `${gameStep.value.step * 20}%`,
+        gameType: 'hard',
+        gameImage: selectedAlbum.value.image
+      })
+      newGame()
     } else {
       nextStep()
     }
   }
   //Non-hard mode
   else {
-  if (normalizeString(album_guess.value) === normalizeString(selected_album.value.name)) {
-    if (album_correct.value === false) {
-      points.value += gameStep.value.step
-      album_correct.value = true
+    if (normalizeString(albumGuess.value) === normalizeString(selectedAlbum.value.name)) {
+      if (!albumCorrect.value) {
+        points.value += gameStep.value.step
+        albumCorrect.value = true
+      }
     }
-  }
-  if (normalizeString(artist_guess.value) === normalizeString(selected_album.value.artist)) {
-    if (artist_correct.value === false) {
-      points.value += gameStep.value.step
-      artist_correct.value = true
+    if (normalizeString(artistGuess.value) === normalizeString(selectedAlbum.value.artist)) {
+      if (!artistCorrect.value) {
+        points.value += gameStep.value.step
+        artistCorrect.value = true
+      }
     }
-  }
-  if (album_correct.value === true && artist_correct.value === true) {
-    addGameHistory({
-      game_won: true,
-      game_points: points.value,
-      game_album_name: selected_album.value.name,
-      game_artist_name: selected_album.value.artist,
-      game_blur_level: `${gameStep.value.step * 20}%`,
-      game_type: 'standard',
-      game_image: selected_album.value.image
+    if (albumCorrect.value && artistCorrect.value) {
+      emit('addGameHistory', {
+        gameWon: true,
+        gamePoints: points.value,
+        gameAlbumName: selectedAlbum.value.name,
+        gameArtistName: selectedAlbum.value.artist,
+        gameBlurLevel: `${gameStep.value.step * 20}%`,
+        gameType: 'standard',
+        gameImage: selectedAlbum.value.image
 
-    })
-    newGame()
-  }
-  else if (gameStep.value.step === 1) {
-    addGameHistory({
-      game_won: false,
-      game_points: points.value,
-      game_album_name: selected_album.value.name,
-      game_artist_name: selected_album.value.artist,
-      game_blur_level: `${gameStep.value.step * 20}%`,
-      game_type: 'standard',
-      game_image: selected_album.value.image
-    })
-    newGame()
-  }
-  else {
-    nextStep()
-  }
-}
-  album_guess.value = ''
-  artist_guess.value = ''
-}
-
-//Makes new game whenever hard_mode is changed
-watch(hard_mode, () => {
+      })
       newGame()
-      album_guess.value = ''
-      artist_guess.value = ''
-    })
+    }
+    else if (gameStep.value.step === 1) {
+      emit('addGameHistory', {
+        gameWon: false,
+        gamePoints: points.value,
+        gameAlbumName: selectedAlbum.value.name,
+        gameArtistName: selectedAlbum.value.artist,
+        gameBlurLevel: `${gameStep.value.step * 20}%`,
+        gameType: 'standard',
+        gameImage: selectedAlbum.value.image
+      })
+      newGame()
+    }
+    else {
+      nextStep()
+    }
+  }
+  albumGuess.value = ''
+  artistGuess.value = ''
+}
 
-    
+//Makes new game whenever hardMode is changed
+watch(hardMode, () => {
+  newGame()
+  albumGuess.value = ''
+  artistGuess.value = ''
+})
+
+
 </script>
 <template>
-  <div class="game-info">
-    <div>Blur level: {{ gameStep.step * 20 }}%</div>
-    <div v-if="!hard_mode">Guesses remaining: {{ gameStep.step }}</div>
-    <div v-else>Guesses remaining: 1</div>
-  </div>
-  <div class="image-container">
-    <img class="main-image" :src="selected_album.image" alt="Blurred" width="240" :style="blur_styling" />  
-    <!-- Above to be changed once data is fetched -->
-  </div>
-  <div class="genre-year">
-    <div class="genre">Genre: {{ selected_album.genre }}</div>
-    <div class="year">Year: {{ selected_album.year }}</div>
-  </div>
-  <div class="points">Points: {{ points }}</div>
-  <div class="entry-forms">
-    <form autocomplete="off" v-on:submit.prevent>
-      Album Name: 
-      <input type="text" name="album_name" v-model="album_guess" :disabled="album_correct" @keyup.enter="handleGuessEntry" :placeholder="album_correct ?selected_album.name : ''" autofocus>
-    </form>
-    <form autocomplete="off" v-on:submit.prevent>
-      Artist Name: 
-      <input type="text" name="artist_name" v-model="artist_guess" :disabled="artist_correct" @keyup.enter="handleGuessEntry">
-    </form>
-  </div>
-  <div class="game-buttons">
-    <div>
-      <button @click="handleGuessEntry" :style="hard_mode === true && (album_guess.length || artist_guess.length) ? 'background: red' : ''">Guess</button>
+  <div v-if="selectedAlbum">
+    <div class="game-info">
+      <div>Blur level: {{ gameStep.step * 20 }}%</div>
+      <div v-if="!hardMode">Guesses remaining: {{ gameStep.step }}</div>
+      <div v-else>Guesses remaining: 1</div>
     </div>
-    <div>
-      <button @click="newGame">New Game</button>
+
+    <div class="image-container">
+      <img class="main-image" :src="selectedAlbum.image" alt="Blurred" width="240" :style="blurStyling" />
+      <!-- Above to be changed once data is fetched -->
     </div>
+
+    <div class="genre-year">
+      <div class="genre">Genre: {{ selectedAlbum.genre }}</div>
+      <div class="year">Year: {{ selectedAlbum.year }}</div>
+    </div>
+
+    <div class="points">Points: {{ points }}</div>
+
+    <div class="entry-forms">
+      <form autocomplete="off" v-on:submit.prevent>
+        Album Name:
+        <input type="text" name="albumName" v-model="albumGuess" :disabled="albumCorrect" @keyup.enter="handleGuessEntry"
+          :placeholder="albumCorrect ? selectedAlbum.name : ''" autofocus>
+      </form>
+      <form autocomplete="off" v-on:submit.prevent>
+        Artist Name:
+        <input type="text" name="artistName" v-model="artistGuess" :disabled="artistCorrect"
+          @keyup.enter="handleGuessEntry">
+      </form>
+    </div>
+
+    <div class="game-buttons">
+      <div>
+        <button @click="handleGuessEntry"
+          :style="hardMode === true && (albumGuess.length || artistGuess.length) ? 'background: red' : ''">Guess</button>
+      </div>
+
+      <div>
+        <button @click="newGame">New Game</button>
+      </div>
+    </div>
+  </div>
+  <!-- Show Spinner while album not selected -->
+  <div v-else>
+    <ion-item>
+      <ion-spinner name="circles"></ion-spinner>
+    </ion-item>
   </div>
 </template>
 
@@ -188,6 +208,7 @@ watch(hard_mode, () => {
   align-items: center;
   padding: 10px 0 10px 0;
 }
+
 .image-container {
   width: 240px;
   height: 240px;
@@ -197,6 +218,7 @@ watch(hard_mode, () => {
   margin-left: auto;
   margin-right: auto;
 }
+
 .genre-year {
   display: flex;
   justify-content: center;
@@ -210,24 +232,29 @@ watch(hard_mode, () => {
   font-size: 20px;
   padding: 10px 0 10px 0;
 }
+
 .entry-forms {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 2px;
 }
+
 .entry-forms input {
   border: none;
   outline: none;
 }
+
 .entry-forms input:disabled {
   background-color: rgb(94, 153, 36);
 }
+
 .entry-forms input::placeholder {
   color: white;
   font-weight: 600;
   opacity: 1;
 }
+
 .game-buttons {
   display: flex;
   flex-direction: column;
@@ -236,6 +263,7 @@ watch(hard_mode, () => {
   gap: 4px;
   padding: 10px;
 }
+
 button {
   color: white;
   background-color: rgb(73, 73, 73);
@@ -246,14 +274,23 @@ button {
   width: 150px;
   text-align-last: center;
   font-weight: 600;
-  }
-  button:hover {
+}
+
+button:hover {
   color: black;
   background-color: white;
+  cursor: pointer;
 }
-  button:active {
-    color: white;
-    background-color: black;
-  }
+
+button:active {
+  color: white;
+  background-color: black;
+}
+
+ion-spinner {
+  width: 100px;
+  height: 100px;
+  margin-top: 120px;
+}
 </style>
 

@@ -1,95 +1,52 @@
-<script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue'
-import HeaderBar from './components/HeaderBar.vue'
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
 import GameControl from './components/GameControl.vue'
-import Modal from './components/ModalFrame.vue'
+import HeaderBar from './components/HeaderBar.vue'
 import HowtoPlayModal from './components/HowtoPlayModal.vue'
-import StatsModal from './components/StatsModal.vue'
+import Modal from './components/ModalFrame.vue'
 import SettingsModal from './components/SettingsModal.vue'
-import ToggleSwitch from './components/ToggleSwitch.vue'
-import { genres, type Genre } from './types/Genre'
-import { decades, type Decade } from './types/Decade'
-import { type GameHistory } from './types/GameHistory'
+import StatsModal from './components/StatsModal.vue'
+import { decades } from './types/Decade'
+import { genres } from './types/Genre'
 
 import useDiscogs from './composables/useDiscogs'
+import useGameHistory from './composables/useGameHistory'
+import useSettings from './composables/useSettings'
 
-export default defineComponent({
-  name: 'App',
-  components: { HeaderBar, GameControl, Modal, HowtoPlayModal, StatsModal, SettingsModal, ToggleSwitch },
-  setup() {
-    const { error, selected_album, fetchAlbum } = useDiscogs()
 
-    const show_how = ref<boolean>(false)
-    const show_stats = ref<boolean>(false)
-    const show_settings = ref<boolean>(false)
-    const genre = ref<Genre | undefined>()
-    const decade = ref<Decade | undefined>()
-    const game_history = ref<GameHistory[]>([])
-    const dev_mode = ref<boolean>(false)
-    const hard_mode = ref<boolean>(false)
+const { error, selectedAlbum } = useDiscogs()
+const { addGameHistory } = useGameHistory()
+const { genre, decade, refreshSettings, devMode } = useSettings()
 
-    const toggleShowHow = () => {
-      show_how.value = !show_how.value
-      console.log('clicked')
-    }
-    const toggleShowStats = () => {
-      show_stats.value = !show_stats.value
-    }
-    const toggleShowSettings = () => {
-      show_settings.value = !show_settings.value
-    }
+const showHow = ref<boolean>(false)
+const showStats = ref<boolean>(false)
+const showSettings = ref<boolean>(false)
 
-    const toggleDevMode = () => {
-      dev_mode.value = !dev_mode.value
-    }
 
-    const toggleHardMode = () => {
-      hard_mode.value = !hard_mode.value
-    }
+function toggleShowHow() {
+  showHow.value = !showHow.value
+}
+function toggleShowStats() {
+  showStats.value = !showStats.value
+}
+function toggleShowSettings() {
+  showSettings.value = !showSettings.value
+}
 
-    //push new game to game_history, show stats at end of every game
-    const addGameHistory = (game: GameHistory) => {
-      game_history.value.push(game)
-      toggleShowStats()
-    }
-
-    const getRandomGenre = () => {
-      const genre_index = Math.floor(Math.random() * genres.length)
-      return genres[genre_index]
-    }
-
-    const getRandomDecade = () => {
-      const decade_index = Math.floor(Math.random() * decades.length)
-      return decades[decade_index]
-    }
-
-    const refreshSettings = async (options?: { genre?: Genre; decade?: Decade }) => {
-      decade.value = options?.decade ?? getRandomDecade()
-      genre.value = options?.genre ?? getRandomGenre()
-      await fetchAlbum(genre.value, decade.value)
-    }
-
-    onMounted(async () => {
-      await refreshSettings()
-    })
-
-    return {
-      genre, decade, genres, decades, selected_album,
-      refreshSettings, game_history, addGameHistory, error, show_how, show_stats, 
-      show_settings, toggleShowHow, toggleShowStats, toggleShowSettings, dev_mode, 
-      hard_mode, toggleDevMode, toggleHardMode
-    }
-  }
+onMounted(async () => {
+  await refreshSettings()
 })
+
 </script>
 <template>
   <div class="main">
     <HeaderBar v-bind="{ toggleShowHow, toggleShowStats, toggleShowSettings }" />
-  
+
     <div class="setting-titles">
       <p>Genre</p>
       <p>Decade</p>
     </div>
+
     <div class="setting-select">
       <select v-model="genre" @change="refreshSettings({ genre })">
         <option v-for="(genre, index) in genres" :value="genre" :key="index">{{ genre }}</option>
@@ -99,42 +56,43 @@ export default defineComponent({
       </select>
     </div>
 
-    <div class="error-message" v-if="error">{{ error.message }}</div>
+    <GameControl @addGameHistory="(game) => { addGameHistory(game), toggleShowStats() }" />
 
-    <GameControl v-else-if="selected_album !== null" :selected_album="selected_album" :refreshSettings="refreshSettings"
-      :addGameHistory="addGameHistory" :hard_mode="hard_mode" />
+    <div class="error-message" v-if="error">
+      <div v-if="devMode">
+        {{ error.message }}
+      </div>
+      <div v-else>
+        Error loading occured
+      </div>
+      <button @click="refreshSettings()">
+        Try Again
+      </button>
+    </div>
 
   </div>
-  <div v-if="dev_mode" class="dev-answers">
-    <p v-if="selected_album">Album - {{ selected_album.name }}</p>
-    <p v-if="selected_album">Artist - {{ selected_album.artist }}</p>
+  <div v-if="devMode" class="dev-answers">
+    <p v-if="selectedAlbum">Album - {{ selectedAlbum.name }}</p>
+    <p v-if="selectedAlbum">Artist - {{ selectedAlbum.artist }}</p>
   </div>
 
+  <div v-if="showHow">
+    <Modal @closemodal="toggleShowHow">
+      <HowtoPlayModal />
+    </Modal>
+  </div>
 
-  <div v-if="show_how">
-      <Modal @closemodal="toggleShowHow">
-        <HowtoPlayModal />
-      </Modal>
-    </div>
+  <div v-if="showStats">
+    <Modal @closemodal="toggleShowStats">
+      <StatsModal />
+    </Modal>
+  </div>
 
-    <div v-if="show_stats">
-      <Modal @closemodal="toggleShowStats">
-        <StatsModal :gameHistory="game_history" />
-      </Modal>
-    </div>
-
-    <div v-if="show_settings">
-      <Modal @closemodal="toggleShowSettings">
-        <SettingsModal>
-            <template #devSwitch>
-              <ToggleSwitch :value="dev_mode" @updateValue="toggleDevMode"/> 
-            </template>
-            <template #modeSwitch>
-              <ToggleSwitch :value="hard_mode" @updateValue="toggleHardMode"/>
-            </template>
-        </SettingsModal>
-      </Modal>
-    </div>
+  <div v-if="showSettings">
+    <Modal @closemodal="toggleShowSettings">
+      <SettingsModal />
+    </Modal>
+  </div>
 </template>
 
 <style scoped>
@@ -147,6 +105,7 @@ select {
   font-size: 16px;
   width: 150px;
   text-align-last: center;
+  cursor: pointer;
 }
 
 .setting-titles {
@@ -172,20 +131,48 @@ select {
   display: flex;
   flex-direction: column;
   align-items: center;
-
-  .error-message {
-    color: crimson;
-    font-weight: 600;
-    padding-top: 50px;
-    font-size: 30px
-  }
 }
+
+.error-message {
+  color: crimson;
+  font-weight: 600;
+  padding-top: 50px;
+  font-size: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.error-message button {
+  color: white;
+  background-color: rgb(73, 73, 73);
+  border-radius: 6px;
+  border: 2px solid white;
+  padding: 4px 14px;
+  font-size: 16px;
+  width: 150px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.error-message button:hover {
+  color: black;
+  background-color: white;
+  cursor: pointer;
+}
+
+.error-message button:active {
+  color: white;
+  background-color: black;
+}
+
 .dev-answers {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
+
 .dev-answers p {
-  margin: 0
+  margin: 0;
 }
 </style>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const emit = defineEmits(['closemodal'])
-const closeModal = () => {
+
+function closeModal() {
   emit('closemodal')
 }
 </script>
