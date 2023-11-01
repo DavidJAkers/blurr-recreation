@@ -16,10 +16,6 @@ Recreation of Blurr App using Vue3 and Typescript
 -No longer loads new game data on modal change, showing user fetch loading of image once they exit stats view
 
 ## Potential future changes
--Fix bug that fetches data twice if both genre and year in the fetch url change at once
-
--Find fix to 'New Game' sometimes not fetching new data
-
 -Rework with different API that has search functionality with more relevant results (Spotify API fulfills some of this, but has its own issues)
 
 ## Project Setup
